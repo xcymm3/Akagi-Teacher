@@ -9,19 +9,22 @@ import type { Breakpoint } from '@/tiles/defaults'
 export function BotShowTile({ bp }: { bp: Breakpoint }) {
   const { t } = useTranslation()
   const responses = useNotifyStore((s) => s.responses)
+  const events = useNotifyStore((s) => s.events)
+  const boundary = events.findLast(e => ['start_game', 'start_kyoku', 'end_kyoku', 'end_game'].includes(e.type))?._seq ?? 0
 
   const show = useMemo(() => {
     for (let i = responses.length - 1; i >= 0; i--) {
+      if (responses[i]._seq < boundary) break
       const s = pickShow(responses[i].meta)
       if (s) return s
     }
     return null
-  }, [responses])
+  }, [responses, boundary])
 
   const rowRef = useRef<HTMLOListElement>(null)
   // The dashboard tile has room for the bot's full candidate list; only the
   // overlay caps it.
-  const items = visibleItems(show)
+  const items = visibleItems(show, show?.coach ? 3 : undefined)
 
   return (
     <TileFrame
@@ -33,7 +36,7 @@ export function BotShowTile({ bp }: { bp: Breakpoint }) {
       {items.length === 0 ? (
         <span className="text-muted-foreground text-sm px-1">{t('tile.bot_show_empty')}</span>
       ) : (
-        <BotShowList items={items} containerRef={rowRef} />
+        <BotShowList items={items} show={show} containerRef={rowRef} />
       )}
     </TileFrame>
   )

@@ -42,7 +42,7 @@ pub const CONFIG_EVENT: &str = "overlay-config";
 /// this label from the automatic restore and we do it ourselves.
 const RESTORE_FLAGS: StateFlags = StateFlags::POSITION.union(StateFlags::SIZE);
 
-const DEFAULT_WIDTH: f64 = 300.0;
+const DEFAULT_WIDTH: f64 = 420.0;
 const MIN_WIDTH: f64 = 190.0;
 
 // The rows split the window's height between them (see the `overlay-show` mahgen
@@ -55,7 +55,7 @@ const CHROME_HEIGHT: f64 = 48.0;
 /// Below this a row can no longer fit a legible tile next to its label.
 const MIN_ROW_HEIGHT: f64 = 34.0;
 /// Roomy enough that the tile is worth glancing at without leaning in.
-const DEFAULT_ROW_HEIGHT: f64 = 62.0;
+const DEFAULT_ROW_HEIGHT: f64 = 150.0;
 
 fn default_height(top_n: usize) -> f64 {
     CHROME_HEIGHT + top_n as f64 * DEFAULT_ROW_HEIGHT

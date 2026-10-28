@@ -4,7 +4,7 @@ import { X } from 'lucide-react'
 import { BotShowList } from '@/components/BotShowList'
 import { pickShow, visibleItems } from '@/lib/botShow'
 import { invoke, listen } from '@/lib/tauri'
-import type { AppConfig, BotResponse, OverlayConfig, ShowMeta } from '@/types'
+import type { AppConfig, BotResponse, MjaiEvent, OverlayConfig, ShowMeta } from '@/types'
 
 // The always-on-top overlay window's entire UI. Mounted by main.tsx instead of
 // the router when the window label is `overlay` — no sidebar, no statusbar, no
@@ -52,6 +52,9 @@ export function Overlay() {
     }).then((u) => unlistens.push(u))
 
     listen<OverlayConfig>('overlay-config', (c) => setCfg(c)).then((u) => unlistens.push(u))
+    listen<MjaiEvent>('mjai-event', (e) => {
+      if (['start_game', 'start_kyoku', 'end_kyoku', 'end_game'].includes(e.type)) setShow(null)
+    }).then((u) => unlistens.push(u))
 
     return () => {
       cancelled = true
@@ -59,7 +62,7 @@ export function Overlay() {
     }
   }, [])
 
-  const items = visibleItems(show, cfg.top_n)
+  const items = visibleItems(show, show?.coach ? 3 : cfg.top_n)
 
   // Closing the overlay persists `enabled = false`, so it stays closed across
   // restarts. Settings is the way back.
@@ -74,7 +77,7 @@ export function Overlay() {
     >
       <div
         data-tauri-drag-region
-        className="flex h-full w-full flex-col overflow-hidden rounded-lg border border-border bg-background shadow-lg [&_*]:pointer-events-none"
+        className={`flex h-full w-full flex-col overflow-hidden rounded-lg border border-border bg-background shadow-lg ${show?.coach ? '' : '[&_*]:pointer-events-none'}`}
         style={{ opacity: cfg.opacity }}
       >
         <header
@@ -99,11 +102,11 @@ export function Overlay() {
         {/* min-h-0 is what gives this a definite height to hand down: without it
             a flex child refuses to shrink below its content, the rows never get
             a height to split, and the list collapses to hugging its content. */}
-        <div className="min-h-0 flex-1 overflow-hidden px-1.5 pb-1.5">
+        <div className={`min-h-0 flex-1 px-1.5 pb-1.5 ${show?.coach ? 'overflow-y-auto' : 'overflow-hidden'}`}>
           {items.length === 0 ? (
             <span className="px-1 text-xs text-muted-foreground">{t('overlay.empty')}</span>
           ) : (
-            <BotShowList items={items} variant="overlay" />
+            <BotShowList items={items} show={show} variant="overlay" />
           )}
         </div>
       </div>

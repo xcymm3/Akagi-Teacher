@@ -595,11 +595,25 @@ impl BotRunner for NativeBot {
         // riichi) has only one possible answer, so asking the server would
         // spend a metered API call to learn nothing. Answer it locally.
         let use_api = self.api.is_some() && self.breaker.allows() && !local.forced;
-        let (action, meta) = if use_api {
+        let (action, mut meta) = if use_api {
             self.remote_decision(&local).await
         } else {
             local_reply(&local, self.seat)
         };
+        // Capture the state owned by THIS decision, not the independently
+        // advancing tracker/cache. Expensive coaching is requested by the UI
+        // later on a blocking worker; autoplay never waits for it.
+        if let Some(show) = meta.as_mut().and_then(|m| m.get_mut("show")) {
+            if show.get("title").and_then(Value::as_str) == Some(SHOW_TITLE_LOCAL) {
+                let snapshot = self.engine.inspect_state(
+                    |s| crate::game_state::snapshot::GameStateSnapshot::from_state(s, Some(self.seat)),
+                    |s| crate::game_state::snapshot::GameStateSnapshot::from_state_3p(s, Some(self.seat)),
+                );
+                let actions: Vec<_> = local.candidates.iter().take(3)
+                    .map(|(a, _)| bot_action_to_mjai(a.clone(), self.seat)).collect();
+                show["coach"] = serde_json::json!({ "snapshot": snapshot, "actions": actions });
+            }
+        }
         Ok(BotResponse { action, meta })
     }
 

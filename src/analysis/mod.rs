@@ -12,6 +12,7 @@
 //! but not copied verbatim. See `README.md`.
 
 pub mod agari_rate;
+pub mod coach;
 pub mod data;
 pub mod hand;
 pub mod improves;

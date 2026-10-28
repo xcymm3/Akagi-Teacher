@@ -113,6 +113,19 @@ pub struct Engine {
 }
 
 impl Engine {
+    /// Read-only access for presentation snapshots. Does not feed events,
+    /// run inference, or apply the proposed action to the live state.
+    pub fn inspect_state<T>(
+        &self,
+        four: impl FnOnce(&GameState) -> T,
+        three: impl FnOnce(&GameState3P) -> T,
+    ) -> T {
+        match &self.backend {
+            Backend::Four { state, .. } => four(state),
+            Backend::Three { state, .. } => three(state),
+        }
+    }
+
     /// Construct for `num_players`, loading weights from a safetensors buffer.
     pub fn new(model_bytes: Vec<u8>, num_players: u8, seat: u8) -> Result<Self> {
         let rule = GameRule::default_tenhou();

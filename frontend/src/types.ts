@@ -45,6 +45,28 @@ export type ShowMeta = {
   /** Optional title; falls back to the tile's default title. */
   title?: string
   items: ShowItem[]
+  /** Immutable local decision context; optional, never used to select actions. */
+  coach?: CoachRequest
+}
+
+export type CoachRequest = { snapshot: GameStateSnapshot; actions: MjaiEvent[] }
+export type CandidateFacts = {
+  action: MjaiEvent
+  shanten: number | null
+  effective_tiles: number | null
+  safe_against: number[]
+  isolated: boolean
+  keeps_dora: boolean
+  discards_dora: boolean
+  flush_suit: number | null
+}
+export type CoachFacts = {
+  seat: number
+  num_players: number
+  best_shanten: number
+  riichi_seats: number[]
+  closed_hand: boolean
+  candidates: CandidateFacts[]
 }
 
 export type BotStatus =

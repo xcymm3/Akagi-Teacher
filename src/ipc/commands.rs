@@ -6,6 +6,15 @@
 //! names quickly and renames break dashboards.
 
 use crate::analysis::result::AnalysisResult;
+
+/// Optional presentation work, off the decision/autoplay runtime path.
+#[tauri::command]
+pub async fn explain_bot_candidates(
+    request: crate::analysis::coach::CoachRequest,
+) -> Result<crate::analysis::coach::CoachFacts, String> {
+    tauri::async_runtime::spawn_blocking(move || crate::analysis::coach::analyze_candidates(request))
+        .await.map_err(|e| e.to_string())?
+}
 use crate::bot::install::{self, GithubInstallSpec, LocalZipInstallSpec};
 use crate::bot::manifest::{self, BotSource};
 use crate::bot::runtime;
@@ -1770,6 +1779,7 @@ macro_rules! ipc_handlers {
             $crate::ipc::commands::read_inspector,
             $crate::ipc::commands::subscribe_inspector,
             $crate::ipc::commands::get_analysis,
+            $crate::ipc::commands::explain_bot_candidates,
             $crate::ipc::commands::get_game_snapshot,
             $crate::ipc::commands::get_mahgen_view,
             $crate::ipc::commands::compute_bot_hora_score,
