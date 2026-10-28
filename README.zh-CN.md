@@ -1,5 +1,11 @@
 <!-- markdownlint-disable MD033 MD041 -->
 
+## Akagi Teacher 教师版下载
+
+[下载 Windows x64 完整便携包](https://github.com/xcymm3/Akagi-Teacher/releases/latest) · [中文使用说明](docs/teacher-windows-usage.zh-CN.md)
+
+教师版为内置本地模型的前三个候选增加牌理说明和攻守取舍解读，不修改模型权重或候选排序。下方保留上游 Akagi 的完整说明。
+
 <br/>
 
 <p align="center">

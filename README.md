@@ -1,5 +1,13 @@
 <!-- markdownlint-disable MD033 MD041 -->
 
+## Akagi Teacher
+
+This fork adds local explanations for the native model's top three candidates and an attack/defence summary, without changing model weights or candidate ranking.
+
+[Download the Windows x64 teacher build](https://github.com/xcymm3/Akagi-Teacher/releases/latest) · [中文使用说明](docs/teacher-windows-usage.zh-CN.md)
+
+The upstream Akagi documentation and attribution follow below.
+
 <br/>
 
 <p align="center">
