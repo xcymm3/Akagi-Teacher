@@ -1,10 +1,10 @@
 # Akagi Teacher 教师版中文使用说明
 
-本说明对应 `teacher-v3.7.2.2`，基于 Akagi v3.7.2，仅提供 Windows x64 便携包。
+本说明对应 `teacher-v3.7.2.3`，基于 Akagi v3.7.2，仅提供 Windows x64 便携包。
 
 ## 下载与启动
 
-1. 前往 [本仓库 Releases](https://github.com/xcymm3/Akagi-Teacher/releases/latest)，下载 `akagi-teacher-v3.7.2.2-windows-x64.zip`。不要选择 GitHub 自动生成的 `Source code` 压缩包。
+1. 前往 [本仓库 Releases](https://github.com/xcymm3/Akagi-Teacher/releases/latest)，下载 `akagi-teacher-v3.7.2.3-windows-x64.zip`。不要选择 GitHub 自动生成的 `Source code` 压缩包。
 2. 将整个压缩包解压到有写入权限的目录。保留程序旁的 `runtime` 文件夹，**不要在压缩包内直接运行，也不要只复制 EXE**。
 3. 关闭正在运行的旧版 Akagi，双击 `akagi-teacher.exe`。本包已带本地模型和 Python/uv 运行环境，无需另行训练模型、安装 Python 或购买云端密钥。
 4. 系统需具备 Microsoft Edge WebView2 Runtime。若程序提示缺少 WebView2，从 [微软官方页面](https://developer.microsoft.com/microsoft-edge/webview2/) 安装 Evergreen Runtime 后重试。此 EXE 未做数字签名，Windows 可能提示未知发布者；先确认下载来源和校验值。
@@ -22,6 +22,7 @@
 - **百分比为模型偏好，不是和牌率、放铳率或正确率。**前三项也不保证相加为 100%，本版不重新归一化。
 - 每项文字描述该选择后的向听、进张、现物、宝牌取舍等可核实依据；下方“局面解读”总结进攻速度与防守的取舍。
 - 概率下方的 **守** 表示对已立直者的现物防守；**贪** 表示相比其他展示候选，牺牲牌效以保留宝牌或争取染手。这是打点方向提示，当前未计算具体番数或完整期望收益。
+- 界面仅展示具体牌理依据；吃碰等操作缺少额外依据时不显示通用解释，没有有效总结时隐藏局面解读。计算口径与标记含义请参阅本说明，不在每次建议下重复显示。
 - 教师候选牌图使用固定尺寸，悬浮窗预留滚动条空间；窗口较小时滚动查看。
 - 进张按未见牌统计，可能包括他家手中的牌，并非保证仍在牌山的张数。现物安全仅针对说明中列出的对手，不代表对所有人安全。
 - 染手文字仅提示可能方向，不保证最终成役或打点；吃碰杠尚未进行所有后续分支的完整收益评估。
@@ -43,7 +44,7 @@
 同时下载 `SHA256SUMS.txt`，在 PowerShell 中执行：
 
 ```powershell
-Get-FileHash -Algorithm SHA256 .\akagi-teacher-v3.7.2.2-windows-x64.zip
+Get-FileHash -Algorithm SHA256 .\akagi-teacher-v3.7.2.3-windows-x64.zip
 ```
 
 将输出与 `SHA256SUMS.txt` 中对应 ZIP 的值比较。解压后的 EXE 校验值也列在校验文件中。

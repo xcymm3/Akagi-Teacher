@@ -63,7 +63,7 @@ export function formatCoach(facts: CoachFacts, language = 'zh-CN'): CoachText {
       else if (c === attack && discards.length > 1) {
         const dominated = discards.some(other => other.shanten! > c.shanten! ||
           (other.shanten === c.shanten && other.effective_tiles! < c.effective_tiles!))
-        if (dominated) parts.push(s('展示候选中更利于推进。', 'Favors speed by shanten and ukeire among the displayed discards.'))
+        if (dominated) parts.push(s('推进更快。', 'Favors speed by shanten and ukeire among the displayed discards.'))
       } else if (attack && c.action.type === 'dahai' && c.shanten === attack.shanten && c.effective_tiles < attack.effective_tiles!) {
         const difference = attack.effective_tiles! - c.effective_tiles
         parts.push(s(`同向听下少约${difference}枚进张。`,
@@ -83,30 +83,30 @@ export function formatCoach(facts: CoachFacts, language = 'zh-CN'): CoachText {
       }
     }
     switch (c.action.type) {
-      case 'reach': parts.push(s('宣告立直，获得立直役，但之后通常只能摸切，防守自由度降低。', 'Declares riichi, adding its yaku but restricting later discard choices.')); break
-      case 'chi': case 'pon': parts.push(s(`组成副露${facts.closed_hand ? '，会失去门清' : ''}；是否加速及最终有役需结合后续舍牌判断。`, 'Forms an open meld; speed and final yaku depend on the subsequent discard.')); break
-      case 'ankan': parts.push(s('暗杠并等待岭上摸牌；最终收益取决于新宝牌和后续局面。', 'Declares a concealed kan and awaits the replacement draw; value depends on new dora and play.')); break
+      case 'reach': parts.push(s('增加立直役，之后通常只能摸切。', 'Adds the riichi yaku; later discards are normally forced.')); break
+      case 'chi': case 'pon': if (facts.closed_hand) parts.push(s('副露后失去门清。', 'Opening the hand gives up menzen.')); break
+      case 'ankan': parts.push(facts.closed_hand ? s('暗杠补牌，保留门清。', 'Draws a replacement tile while preserving menzen.') : s('暗杠补牌。', 'Draws a replacement tile.')); break
       case 'daiminkan': case 'kakan': parts.push(s('开杠补牌，并增加宝牌指示牌。', 'Makes a kan, draws a replacement tile and reveals another dora indicator.')); break
-      case 'none': parts.push(s('跳过本次响应，保留当前手牌。', 'Declines this response and preserves the hand.')); break
-      case 'hora': parts.push(s('接受当前合法和牌，结束本手。', 'Accepts the current legal win and ends the hand.')); break
-      case 'kita': parts.push(s('将北作为拔北宝牌移出手牌并补牌，可能影响原有结构。', 'Extracts North for kita and a replacement tile, possibly changing the hand structure.')); break
-      case 'ryukyoku': parts.push(s('选择九种九牌流局，放弃继续本手。', 'Chooses the nine-terminals abort rather than continuing this hand.')); break
+      case 'none': if (facts.closed_hand) parts.push(s('保留门清。', 'Preserves menzen.')); break
+      case 'hora': break
+      case 'kita': parts.push(s('拔北计宝牌，并补摸一张。', 'Counts North as kita dora and draws a replacement tile.')); break
+      case 'ryukyoku': break
     }
-    return parts.join(' ') || s('模型给出的合法候选，当前依据不足以确定主要理由。', 'A legal model candidate; available evidence does not establish its main rationale.')
+    return parts.join(' ')
   })
   let summary: string
   if (attack && defence && attack !== defence) {
-    summary = s(`按向听与进张追求速度可选${name(attack.action)}；优先对已立直的${defence.safe_against.map(position).join('、')}防守可选${name(defence.action)}。`,
-      `For speed by shanten/ukeire, consider ${name(attack.action)}; for genbutsu defence against ${defence.safe_against.map(position).join(', ')}, consider ${name(defence.action)}.`)
+    summary = s(`推进选${name(attack.action)}；对${defence.safe_against.map(position).join('、')}防守选${name(defence.action)}。`,
+      `For speed, ${name(attack.action)}; to defend against ${defence.safe_against.map(position).join(', ')}, ${name(defence.action)}.`)
   } else if (attack && defence) {
-    summary = s(`${name(attack.action)}兼顾展示候选中的牌效率和对已立直者的现物防守。`,
+    summary = s(`${name(attack.action)}兼顾推进与对${defence.safe_against.map(position).join('、')}的现物防守。`,
       `${name(attack.action)} combines displayed hand-efficiency evidence with genbutsu defence.`)
   } else if (attack) {
-    summary = s(`按向听与进张比较，${name(attack.action)}偏向推进手牌。`, `By shanten/ukeire, ${name(attack.action)} favors hand progress.`)
-    if (threat) summary += s(`${threat}已立直，展示候选中没有已确认的立直现物，不能据此给出安全出牌。`, `${threat} in riichi; none of the displayed discards is confirmed genbutsu, so no safe discard is established.`)
+    summary = s(`推进选${name(attack.action)}。`, `For speed, ${name(attack.action)}.`)
+    if (threat) summary += s(`${threat}已立直，候选中均非其已确认现物。`, `${threat} in riichi; no displayed discard is confirmed genbutsu.`)
   } else {
-    summary = s('按原模型排序比较这些操作；鸣牌后的效率和收益尚未做完整分支评估。', 'Compare these actions in the original model order; post-call efficiency and value have not been fully evaluated.')
+    summary = ''
   }
-  if (far && threat && attack) summary = s(`当前最佳出牌仍为${state(facts.best_shanten)}，距离听牌较远。`, `The best available discard still leaves ${state(facts.best_shanten)}. `) + summary
+  if (far && threat && attack) summary = s(`出牌后仍为${state(facts.best_shanten)}，离听牌较远。`, `The best available discard still leaves ${state(facts.best_shanten)}. `) + summary
   return { labels: facts.candidates.map(c => name(c.action)), reasons, markers, summary }
 }

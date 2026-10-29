@@ -31,7 +31,8 @@ describe('shared dashboard/overlay coaching view', () => {
     expect(marker.parentElement?.parentElement?.textContent).toBe('40%守')
     expect(within(rows[2]).getByText('20%')).toBeDefined()
     expect(screen.getAllByText('40%')).toHaveLength(2)
-    expect(screen.getByRole('note').textContent).toContain('防守可选4条')
+    expect(screen.queryByText(/进张按未见牌估算/)).toBeNull()
+    expect(screen.getByRole('note').textContent).toContain('防守选4条')
   })
   it('retains the original recommendation when analysis fails', () => {
     useCoach.mockReturnValue({ available: true, pending: false, facts: null })

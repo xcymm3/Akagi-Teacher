@@ -42,7 +42,7 @@ export function BotShowList({ items, show, containerRef, variant = 'tile', class
   return (
     <div className={cn('flex flex-col gap-2', overlay && !coach.available && 'h-full')}>
     {coach.available && <p className="text-[11px] text-muted-foreground">
-      {zh ? '百分比为模型偏好 · 以下为独立牌理解读' : 'Percentages are model preferences · Independent hand analysis'}
+      {zh ? '百分比为模型偏好' : 'Percentages are model preferences'}
     </p>}
     <ol
       ref={containerRef}
@@ -98,20 +98,18 @@ export function BotShowList({ items, show, containerRef, variant = 'tile', class
               </span> : null}
               </div>
             )}
-            {coach.available && i < 3 && <p className="w-full whitespace-normal break-words text-xs leading-relaxed text-foreground/90">
+            {coach.available && i < 3 && (!text || text.reasons[i]) && <p className="w-full whitespace-normal break-words text-xs leading-relaxed text-foreground/90">
               {text?.reasons[i] ?? (coach.pending
-                ? (zh ? '正在分析此局面的依据…' : 'Analyzing this decision…')
-                : (zh ? '暂无法取得解释，原模型建议不受影响。' : 'Explanation unavailable; the original recommendation is unchanged.'))}
+                ? (zh ? '正在分析…' : 'Analyzing this decision…')
+                : (zh ? '暂无法取得解释。' : 'Explanation unavailable; the original recommendation is unchanged.'))}
             </p>}
           </li>
         )
       })}
     </ol>
-    {text && <div className="rounded-md border border-border bg-muted/30 p-2 text-xs leading-relaxed" role="note">
+    {text?.summary && <div className="rounded-md border border-border bg-muted/30 p-2 text-xs leading-relaxed" role="note">
       <strong>{zh ? '局面解读：' : 'Hand analysis: '}</strong>{text.summary}
-      <p className="mt-1 text-[10px] text-muted-foreground">{zh
-        ? '进张按未见牌估算；现物仅针对标注的对手。守：现物防守；贪：牺牲牌效争取打点。'
-        : 'Ukeire counts unseen copies, not guaranteed live-wall tiles. This is not the model’s thought process and does not change its ranking.'}</p>
+
     </div>}
     </div>
   )

@@ -22,8 +22,8 @@ describe('candidate teaching evidence', () => {
     expect(text.reasons[1]).toContain('对家')
     expect(text.reasons[1]).not.toContain('九万')
     expect(text.reasons[2]).toContain('少约8枚')
-    expect(text.summary).toContain('速度可选9筒')
-    expect(text.summary).toContain('防守可选4条')
+    expect(text.summary).toContain('推进选9筒')
+    expect(text.summary).toContain('防守选4条')
     expect(text.markers[1]).toEqual(['守'])
     expect(text.reasons.join('')).not.toMatch(/未见牌口径|孤张本身|不等同于/)
     expect(input).toEqual(before)
@@ -31,9 +31,9 @@ describe('candidate teaching evidence', () => {
   it('does not manufacture a safe discard or claim pass means folding', () => {
     const input = facts()
     input.candidates.forEach(c => { c.safe_against = [] })
-    expect(formatCoach(input).summary).toContain('没有已确认')
+    expect(formatCoach(input).summary).toContain('均非其已确认现物')
     input.candidates = [{ ...candidate('9p', 2, 24), action: { type: 'none' }, shanten: null, effective_tiles: null }]
-    expect(formatCoach(input).reasons[0]).toContain('跳过本次响应')
+    expect(formatCoach(input).reasons[0]).toContain('保留门清')
     expect(formatCoach(input).summary).not.toContain('最佳出牌')
   })
   it('does not make up flush value, and does not label sanma seats as opposite', () => {
@@ -48,11 +48,22 @@ describe('candidate teaching evidence', () => {
   it('handles riichi with no predicted tile, calls, wins and fewer than three actions', () => {
     const input = facts()
     input.candidates = [{ ...candidate('9p', 2, 24), action: { type: 'reach', actor: 0 }, shanten: null, effective_tiles: null }]
-    expect(formatCoach(input).reasons[0]).toContain('防守自由度降低')
+    expect(formatCoach(input).reasons[0]).toContain('通常只能摸切')
     input.candidates[0].action = { type: 'pon', actor: 0, target: 1, pai: 'E', consumed: ['E', 'E'] }
     expect(formatCoach(input).reasons[0]).toContain('失去门清')
     input.candidates[0].action = { type: 'hora', actor: 0, target: 1 }
-    expect(formatCoach(input).reasons[0]).toContain('合法和牌')
+    expect(formatCoach(input).reasons[0]).toBe('')
+    expect(formatCoach(input).summary).toBe('')
+  })
+  it('omits generic call commentary when the hand is already open', () => {
+    const input = facts()
+    input.closed_hand = false
+    input.candidates = [{ ...candidate('9p', 2, 24), action: { type: 'chi', actor: 0, target: 3, pai: '3p', consumed: ['1p', '2p'] }, shanten: null, effective_tiles: null }]
+    expect(formatCoach(input).reasons).toEqual([''])
+    expect(formatCoach(input).summary).toBe('')
+    input.closed_hand = true
+    expect(formatCoach(input).reasons[0]).toBe('副露后失去门清。')
+    expect(formatCoach(input).summary).not.toMatch(/按原模型|尚未做|结合后续/)
   })
   it('marks value only when supported by a comparative efficiency tradeoff', () => {
     const input = facts()
@@ -70,7 +81,7 @@ describe('candidate teaching evidence', () => {
     const input = facts()
     input.candidates[0].shanten = null
     input.candidates[0].effective_tiles = null
-    expect(formatCoach(input).reasons[0]).toContain('依据不足')
+    expect(formatCoach(input).reasons[0]).toBe('')
     expect(formatCoach(input, 'en').reasons[1]).toContain('Genbutsu')
   })
 })
