@@ -102,7 +102,7 @@ export function Overlay() {
         {/* min-h-0 is what gives this a definite height to hand down: without it
             a flex child refuses to shrink below its content, the rows never get
             a height to split, and the list collapses to hugging its content. */}
-        <div className={`min-h-0 flex-1 px-1.5 pb-1.5 ${show?.coach ? 'overflow-y-auto' : 'overflow-hidden'}`}>
+        <div className={`min-h-0 flex-1 px-1.5 pb-1.5 ${show?.coach ? 'overflow-y-auto [scrollbar-gutter:stable]' : 'overflow-hidden'}`}>
           {items.length === 0 ? (
             <span className="px-1 text-xs text-muted-foreground">{t('overlay.empty')}</span>
           ) : (
