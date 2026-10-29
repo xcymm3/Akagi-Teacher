@@ -27,6 +27,8 @@ describe('shared dashboard/overlay coaching view', () => {
     expect(within(rows[0]).getByText('9筒')).toBeDefined()
     expect(within(rows[1]).getByText('4条')).toBeDefined()
     expect(within(rows[1]).getByText(/对家.*现物/)).toBeDefined()
+    const marker = within(rows[1]).getByText('守')
+    expect(marker.parentElement?.parentElement?.textContent).toBe('40%守')
     expect(within(rows[2]).getByText('20%')).toBeDefined()
     expect(screen.getAllByText('40%')).toHaveLength(2)
     expect(screen.getByRole('note').textContent).toContain('防守可选4条')

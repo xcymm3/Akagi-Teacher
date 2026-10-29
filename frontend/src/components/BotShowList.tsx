@@ -69,7 +69,7 @@ export function BotShowList({ items, show, containerRef, variant = 'tile', class
             {seq && (
               <Mahgen
                 seq={seq}
-                kind={coach.available ? 'hand-risk' : overlay ? 'overlay-show' : 'bot-show'}
+                kind={coach.available ? 'coach-show' : overlay ? 'overlay-show' : 'bot-show'}
                 // Overlay tiles measure their own row, so they must NOT be
                 // handed the list element: Mahgen falls back to the parent <li>.
                 containerRef={overlay ? undefined : containerRef}
@@ -84,6 +84,7 @@ export function BotShowList({ items, show, containerRef, variant = 'tile', class
               )}
             </div>
             {it.value && (
+              <div className="flex shrink-0 flex-col items-end gap-0.5">
               <span
                 className={cn(
                   'font-mono tabular-nums text-foreground/90',
@@ -92,6 +93,10 @@ export function BotShowList({ items, show, containerRef, variant = 'tile', class
               >
                 {it.value}
               </span>
+              {text?.markers[i]?.length ? <span className="flex gap-1 text-xs font-semibold">
+                {text.markers[i].map(marker => <span key={marker} className="rounded bg-muted px-1" title={marker === '守' || marker === 'Defend' ? (zh ? '对已立直者的现物防守' : 'Genbutsu against a riichi player') : (zh ? '牺牲牌效，争取打点；未计算番数' : 'Trades efficiency for potential value; han not calculated')}>{marker}</span>)}
+              </span> : null}
+              </div>
             )}
             {coach.available && i < 3 && <p className="w-full whitespace-normal break-words text-xs leading-relaxed text-foreground/90">
               {text?.reasons[i] ?? (coach.pending
@@ -105,7 +110,7 @@ export function BotShowList({ items, show, containerRef, variant = 'tile', class
     {text && <div className="rounded-md border border-border bg-muted/30 p-2 text-xs leading-relaxed" role="note">
       <strong>{zh ? '局面解读：' : 'Hand analysis: '}</strong>{text.summary}
       <p className="mt-1 text-[10px] text-muted-foreground">{zh
-        ? '进张按未见牌估算，并非牌山保证；文字不是模型思考过程，不改变原排序。'
+        ? '进张按未见牌估算；现物仅针对标注的对手。守：现物防守；贪：牺牲牌效争取打点。'
         : 'Ukeire counts unseen copies, not guaranteed live-wall tiles. This is not the model’s thought process and does not change its ranking.'}</p>
     </div>}
     </div>

@@ -24,6 +24,8 @@ describe('candidate teaching evidence', () => {
     expect(text.reasons[2]).toContain('少约8枚')
     expect(text.summary).toContain('速度可选9筒')
     expect(text.summary).toContain('防守可选4条')
+    expect(text.markers[1]).toEqual(['守'])
+    expect(text.reasons.join('')).not.toMatch(/未见牌口径|孤张本身|不等同于/)
     expect(input).toEqual(before)
   })
   it('does not manufacture a safe discard or claim pass means folding', () => {
@@ -31,7 +33,7 @@ describe('candidate teaching evidence', () => {
     input.candidates.forEach(c => { c.safe_against = [] })
     expect(formatCoach(input).summary).toContain('没有已确认')
     input.candidates = [{ ...candidate('9p', 2, 24), action: { type: 'none' }, shanten: null, effective_tiles: null }]
-    expect(formatCoach(input).reasons[0]).toContain('不等同于已经决定弃和')
+    expect(formatCoach(input).reasons[0]).toContain('跳过本次响应')
     expect(formatCoach(input).summary).not.toContain('最佳出牌')
   })
   it('does not make up flush value, and does not label sanma seats as opposite', () => {
@@ -40,7 +42,7 @@ describe('candidate teaching evidence', () => {
     input.candidates[1].flush_suit = 1
     const text = formatCoach(input)
     expect(text.reasons[1]).toContain('上家')
-    expect(text.reasons[1]).toContain('尚未确认成役或打点')
+    expect(text.reasons[1]).toContain('争取染手')
     expect(text.reasons.join('')).not.toContain('对家')
   })
   it('handles riichi with no predicted tile, calls, wins and fewer than three actions', () => {
@@ -51,6 +53,18 @@ describe('candidate teaching evidence', () => {
     expect(formatCoach(input).reasons[0]).toContain('失去门清')
     input.candidates[0].action = { type: 'hora', actor: 0, target: 1 }
     expect(formatCoach(input).reasons[0]).toContain('合法和牌')
+  })
+  it('marks value only when supported by a comparative efficiency tradeoff', () => {
+    const input = facts()
+    input.candidates[0].discards_dora = true
+    input.candidates[2].keeps_dora = true
+    expect(formatCoach(input).markers[2]).toEqual(['贪'])
+    input.candidates[0].discards_dora = false
+    expect(formatCoach(input).markers[2]).toEqual([])
+    input.candidates[2].flush_suit = 1
+    expect(formatCoach(input).markers[2]).toEqual(['贪'])
+    input.candidates[2].effective_tiles = 30
+    expect(formatCoach(input).markers[2]).toEqual([])
   })
   it('falls back honestly for missing discard evidence', () => {
     const input = facts()
