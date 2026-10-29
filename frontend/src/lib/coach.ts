@@ -38,12 +38,8 @@ export function formatCoach(facts: CoachFacts, language = 'zh-CN'): CoachText {
       default: return s('杠', 'kan')
     }
   }
-  const discards = facts.candidates.filter(c => c.action.type === 'dahai' && c.shanten !== null)
+  const discards = facts.candidates.filter(c => c.action.type === 'dahai' && c.shanten !== null && c.effective_tiles !== null)
   const attack = [...discards].sort((a, b) => a.shanten! - b.shanten! || (b.effective_tiles ?? 0) - (a.effective_tiles ?? 0))[0]
-  const defence = [...discards].filter(c => c.safe_against.length > 0)
-    .sort((a, b) => b.safe_against.length - a.safe_against.length)[0]
-  const far = facts.best_shanten >= 2
-  const threat = facts.riichi_seats.map(position).join(s('、', ', '))
   const markers = facts.candidates.map(c => {
     const slower = attack && c.shanten !== null && c.effective_tiles !== null &&
       (c.shanten > attack.shanten! || (c.shanten === attack.shanten && c.effective_tiles < attack.effective_tiles!))
@@ -57,17 +53,27 @@ export function formatCoach(facts: CoachFacts, language = 'zh-CN'): CoachText {
   const reasons = facts.candidates.map((c: CandidateFacts) => {
     const parts: string[] = []
     if (c.shanten !== null && c.effective_tiles !== null) {
-      parts.push(s(`打出后为${state(c.shanten)}，进张约${c.effective_tiles}枚。`,
-        `Leaves ${state(c.shanten)}, with about ${c.effective_tiles} unseen effective tiles.`))
-      if (c.shanten > facts.best_shanten) parts.push(s('向听数增加，推进较慢。', 'Gives up shanten compared with an available discard.'))
-      else if (c === attack && discards.length > 1) {
-        const dominated = discards.some(other => other.shanten! > c.shanten! ||
-          (other.shanten === c.shanten && other.effective_tiles! < c.effective_tiles!))
-        if (dominated) parts.push(s('推进更快。', 'Favors speed by shanten and ukeire among the displayed discards.'))
-      } else if (attack && c.action.type === 'dahai' && c.shanten === attack.shanten && c.effective_tiles < attack.effective_tiles!) {
-        const difference = attack.effective_tiles! - c.effective_tiles
+      const peers = c.action.type === 'dahai' ? discards.filter(other => other.shanten === c.shanten) : []
+      const maximum = Math.max(...peers.map(other => other.effective_tiles!))
+      const differentCounts = peers.some(other => other.effective_tiles !== c.effective_tiles)
+      let comparison = ''
+      if (peers.length > 1 && differentCounts && c.effective_tiles === maximum) {
+        const tied = peers.filter(other => other.effective_tiles === maximum).length > 1
+        const scope = peers.length === facts.candidates.length && peers.length === 3
+          ? s('三个候选中', 'among the three candidates')
+          : s('同向听候选中', 'among candidates at the same shanten')
+        comparison = s(`，${scope}${tied ? '并列' : ''}最多`, `, ${tied ? 'joint ' : ''}highest ${scope}`)
+      }
+      parts.push(s(`打出后为${state(c.shanten)}，进张约${c.effective_tiles}枚${comparison}。`,
+        `Leaves ${state(c.shanten)}, with about ${c.effective_tiles} unseen effective tiles${comparison}.`))
+      if (c.shanten > facts.best_shanten) {
+        const difference = c.shanten - facts.best_shanten
+        parts.push(s(`比最低可达向听多${difference}向听。`, `Leaves ${difference} more shanten than the minimum available.`))
+      }
+      if (peers.length > 1 && c.effective_tiles < maximum) {
+        const difference = maximum - c.effective_tiles
         parts.push(s(`同向听下少约${difference}枚进张。`,
-          `At the same shanten, has about ${difference} fewer effective tiles than the efficiency candidate.`))
+          `About ${difference} fewer effective tiles than the maximum at this shanten.`))
       }
       if (c.safe_against.length) {
         const opponents = c.safe_against.map(position).join(s('、', ', '))
@@ -92,21 +98,22 @@ export function formatCoach(facts: CoachFacts, language = 'zh-CN'): CoachText {
       case 'kita': parts.push(s('拔北计宝牌，并补摸一张。', 'Counts North as kita dora and draws a replacement tile.')); break
       case 'ryukyoku': break
     }
-    return parts.join(' ')
+    return parts.join(zh ? '' : ' ')
   })
-  let summary: string
-  if (attack && defence && attack !== defence) {
-    summary = s(`推进选${name(attack.action)}；对${defence.safe_against.map(position).join('、')}防守选${name(defence.action)}。`,
-      `For speed, ${name(attack.action)}; to defend against ${defence.safe_against.map(position).join(', ')}, ${name(defence.action)}.`)
-  } else if (attack && defence) {
-    summary = s(`${name(attack.action)}兼顾推进与对${defence.safe_against.map(position).join('、')}的现物防守。`,
-      `${name(attack.action)} combines displayed hand-efficiency evidence with genbutsu defence.`)
-  } else if (attack) {
-    summary = s(`推进选${name(attack.action)}。`, `For speed, ${name(attack.action)}.`)
-    if (threat) summary += s(`${threat}已立直，候选中均非其已确认现物。`, `${threat} in riichi; no displayed discard is confirmed genbutsu.`)
-  } else {
-    summary = ''
+  // Compare only measured discard outcomes. The first candidate remains the
+  // policy's first choice; ukeire is an immediate count, not an overall value.
+  const first = facts.candidates[0]
+  let summary = ''
+  if (first && discards.includes(first) && attack) {
+    if (first.shanten === attack.shanten && first.effective_tiles === attack.effective_tiles) {
+      summary = s(`建议打${name(first.action)}。`, `Discard ${name(first.action)}.`)
+    } else if (attack.shanten! < first.shanten!) {
+      summary = s(`模型首选${name(first.action)}；但${name(attack.action)}打出后为${state(attack.shanten!)}，向听数更低。`,
+        `The model prefers ${name(first.action)}; ${name(attack.action)} leaves ${state(attack.shanten!)}, a lower shanten.`)
+    } else {
+      summary = s(`模型首选${name(first.action)}；但${name(attack.action)}的即时进张更多。`,
+        `The model prefers ${name(first.action)}; ${name(attack.action)} has more immediate effective tiles.`)
+    }
   }
-  if (far && threat && attack) summary = s(`出牌后仍为${state(facts.best_shanten)}，离听牌较远。`, `The best available discard still leaves ${state(facts.best_shanten)}. `) + summary
   return { labels: facts.candidates.map(c => name(c.action)), reasons, markers, summary }
 }
