@@ -80,6 +80,8 @@ cp -RP "$UV_SRC" "$STAGE/runtime/uv/$TARGET"
 
 cp "$ROOT/LICENSE.txt" "$STAGE/LICENSE.txt"
 cp "$ROOT/NOTICE"      "$STAGE/NOTICE"
+cp "$ROOT/coach-go/LICENSE" "$STAGE/mahjong-helper-LICENSE.txt"
+cp "$ROOT/coach-go/GO-LICENSE" "$STAGE/Go-LICENSE.txt"
 
 cat > "$STAGE/README.txt" <<EOF
 Akagi $VERSION — portable build ($OS-$ARCH)
