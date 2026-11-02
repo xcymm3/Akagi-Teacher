@@ -1,6 +1,7 @@
 //! Optional, read-only evidence for the native bot's first three candidates.
 //! Receives an immutable decision snapshot; never consults the live tracker.
-//! This deliberately computes shanten/ukeire only, not a second policy or EV.
+//! Baseline metrics are retained for unsupported shapes and helper failures.
+//! The independent Go engine supplies deeper evaluation without changing actions.
 
 use super::{shanten, snapshot_adapter::to_player_info, tile::Tile34, waits};
 use crate::game_state::snapshot::GameStateSnapshot;
@@ -11,6 +12,8 @@ use serde::{Deserialize, Serialize};
 pub struct CoachRequest {
     pub snapshot: GameStateSnapshot,
     pub actions: Vec<MjaiEvent>,
+    #[serde(default)]
+    pub events: Vec<MjaiEvent>,
 }
 
 #[derive(Debug, Clone, Serialize)]
@@ -35,6 +38,8 @@ pub struct CoachFacts {
     pub riichi_seats: Vec<u8>,
     pub closed_hand: bool,
     pub candidates: Vec<CandidateFacts>,
+    pub helper: Option<serde_json::Value>,
+    pub helper_error: Option<String>,
 }
 
 /// Count unseen copies from public information, including our own river and
@@ -207,6 +212,8 @@ pub fn analyze_candidates(request: CoachRequest) -> Result<CoachFacts, String> {
         riichi_seats,
         closed_hand: info.melds.iter().all(|m| m.kind.is_concealed()),
         candidates,
+        helper: None,
+        helper_error: None,
     })
 }
 
@@ -242,6 +249,7 @@ mod tests {
         let before = serde_json::to_value(&snap).unwrap();
         let facts = analyze_candidates(CoachRequest {
             snapshot: snap.clone(),
+            events: vec![],
             actions: vec![discard("9p"), discard("4s"), discard("E")],
         })
         .unwrap();
@@ -271,6 +279,7 @@ mod tests {
         assert_eq!(unseen(&snap, 0)[27], 2); // hand E + own discarded E
         let facts = analyze_candidates(CoachRequest {
             snapshot: snap,
+            events: vec![],
             actions: vec![discard("9p")],
         })
         .unwrap();
@@ -283,6 +292,7 @@ mod tests {
         snap.players[2].river[0].tile = "5p".into();
         let facts = analyze_candidates(CoachRequest {
             snapshot: snap,
+            events: vec![],
             actions: vec![discard("5pr")],
         })
         .unwrap();
@@ -294,6 +304,7 @@ mod tests {
         let snap = snapshot();
         let facts = analyze_candidates(CoachRequest {
             snapshot: snap,
+            events: vec![],
             actions: vec![discard("8m"), MjaiEvent::None],
         })
         .unwrap();
@@ -320,9 +331,127 @@ mod tests {
         snap.dora_markers = vec!["1m".into()];
         let facts = analyze_candidates(CoachRequest {
             snapshot: snap,
+            events: vec![],
             actions: vec![discard("9m")],
         })
         .unwrap();
         assert!(facts.candidates[0].discards_dora);
     }
+    #[tokio::test]
+    async fn embedded_go_core_matches_the_bound_decision_and_keeps_order() {
+        let request = CoachRequest {
+            snapshot: snapshot(),
+            actions: vec![discard("9p"), discard("4s")],
+            events: vec![],
+        };
+        let before = serde_json::to_value(&request.snapshot).unwrap();
+        let result = explain(request.clone()).await.unwrap();
+        assert_eq!(serde_json::to_value(&request.snapshot).unwrap(), before);
+        assert_eq!(
+            serde_json::to_value(&result.candidates[0].action).unwrap()["pai"],
+            "9p"
+        );
+        let helper = result
+            .helper
+            .as_ref()
+            .unwrap_or_else(|| panic!("Go helper: {:?}", result.helper_error));
+        assert_eq!(helper["version"], "mahjong-helper@514bb97+akagi");
+        assert_eq!(
+            helper["candidates"][0]["shanten"],
+            result.candidates[0].shanten.unwrap()
+        );
+        assert_eq!(
+            helper["candidates"][0]["ukeire"],
+            result.candidates[0].effective_tiles.unwrap()
+        );
+        assert_eq!(helper["opponents"].as_array().unwrap().len(), 3);
+    }
+}
+
+/// Full analysis runs only when requested by the UI. One child per request,
+/// bounded concurrency and wall time; dropping a timed-out child kills it.
+pub async fn explain(request: CoachRequest) -> Result<CoachFacts, String> {
+    static SLOTS: tokio::sync::Semaphore = tokio::sync::Semaphore::const_new(2);
+    let baseline_request = request.clone();
+    let mut facts =
+        tauri::async_runtime::spawn_blocking(move || analyze_candidates(baseline_request))
+            .await
+            .map_err(|e| e.to_string())??;
+    let go_request = serde_json::json!({
+        "snapshot": request.snapshot, "actions": request.actions, "events": request.events,
+        "left": unseen(&request.snapshot, facts.seat).to_vec()
+    });
+    let run = async {
+        let _permit = SLOTS.acquire().await.map_err(|e| e.to_string())?;
+        run_helper(go_request).await
+    };
+    match tokio::time::timeout(std::time::Duration::from_secs(12), run).await {
+        Ok(Ok(value)) => {
+            // Do not use the upstream normal/chiitoi evaluator for kokushi or
+            // other shapes for which our broader shanten evaluator disagrees.
+            facts.helper = Some(value);
+        }
+        Ok(Err(e)) => facts.helper_error = Some(e),
+        Err(_) => facts.helper_error = Some("analysis timeout".into()),
+    }
+    Ok(facts)
+}
+
+async fn run_helper(input: serde_json::Value) -> Result<serde_json::Value, String> {
+    use std::sync::OnceLock;
+    use tokio::io::{AsyncReadExt, AsyncWriteExt};
+    static DIRECTORY: OnceLock<Result<tempfile::TempDir, String>> = OnceLock::new();
+    let directory = DIRECTORY
+        .get_or_init(|| {
+            let dir = tempfile::Builder::new()
+                .prefix("akagi-coach-")
+                .tempdir()
+                .map_err(|e| e.to_string())?;
+            let path = dir
+                .path()
+                .join(if cfg!(windows) { "coach.exe" } else { "coach" });
+            std::fs::write(&path, include_bytes!(env!("AKAGI_COACH_BINARY")))
+                .map_err(|e| e.to_string())?;
+            #[cfg(unix)]
+            {
+                use std::os::unix::fs::PermissionsExt;
+                std::fs::set_permissions(&path, std::fs::Permissions::from_mode(0o700))
+                    .map_err(|e| e.to_string())?;
+            }
+            Ok(dir)
+        })
+        .as_ref()
+        .map_err(Clone::clone)?;
+    let executable = directory
+        .path()
+        .join(if cfg!(windows) { "coach.exe" } else { "coach" });
+    let mut command = tokio::process::Command::new(executable);
+    command
+        .stdin(std::process::Stdio::piped())
+        .stdout(std::process::Stdio::piped())
+        .stderr(std::process::Stdio::null())
+        .kill_on_drop(true);
+    #[cfg(windows)]
+    command.creation_flags(0x08000000);
+    let mut child = command.spawn().map_err(|e| e.to_string())?;
+    let mut stdin = child.stdin.take().ok_or("helper stdin")?;
+    stdin
+        .write_all(&serde_json::to_vec(&input).map_err(|e| e.to_string())?)
+        .await
+        .map_err(|e| e.to_string())?;
+    drop(stdin);
+    let mut bytes = Vec::new();
+    child
+        .stdout
+        .take()
+        .ok_or("helper stdout")?
+        .take(2 * 1024 * 1024)
+        .read_to_end(&mut bytes)
+        .await
+        .map_err(|e| e.to_string())?;
+    let status = child.wait().await.map_err(|e| e.to_string())?;
+    if !status.success() {
+        return Err("Go analysis failed".into());
+    }
+    serde_json::from_slice(&bytes).map_err(|e| e.to_string())
 }

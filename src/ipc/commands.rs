@@ -12,8 +12,7 @@ use crate::analysis::result::AnalysisResult;
 pub async fn explain_bot_candidates(
     request: crate::analysis::coach::CoachRequest,
 ) -> Result<crate::analysis::coach::CoachFacts, String> {
-    tauri::async_runtime::spawn_blocking(move || crate::analysis::coach::analyze_candidates(request))
-        .await.map_err(|e| e.to_string())?
+    crate::analysis::coach::explain(request).await
 }
 use crate::bot::install::{self, GithubInstallSpec, LocalZipInstallSpec};
 use crate::bot::manifest::{self, BotSource};

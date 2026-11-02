@@ -92,6 +92,12 @@ jobs:
           ref: ${{ needs.authorize.outputs.head_sha }}
           persist-credentials: false
 
+      - name: Setup Go analysis core
+        uses: actions/setup-go@v5
+        with:
+          go-version-file: coach-go/go.mod
+          cache-dependency-path: coach-go/go.sum
+
       - name: Setup Rust
         uses: dtolnay/rust-toolchain@stable
         with:

@@ -49,7 +49,7 @@ export type ShowMeta = {
   coach?: CoachRequest
 }
 
-export type CoachRequest = { snapshot: GameStateSnapshot; actions: MjaiEvent[] }
+export type CoachRequest = { snapshot: GameStateSnapshot; actions: MjaiEvent[]; events?: MjaiEvent[] }
 export type CandidateFacts = {
   action: MjaiEvent
   shanten: number | null
@@ -60,6 +60,17 @@ export type CandidateFacts = {
   discards_dora: boolean
   flush_suit: number | null
 }
+export type HelperMetrics = {
+  shanten: number; ukeire: number; next: number; improve: number; improve_tiles: number[]
+  speed: number; win: number; dama: number; riichi: number; round: number
+  furiten: number; yaku: string[]; part: boolean
+}
+export type HelperAnalysis = {
+  version: string; preferred_index: number; reference_only: boolean
+  ranked: { tile: number; consumed?: number[]; metrics: HelperMetrics }[]
+  candidates: (HelperMetrics | null)[]; followup: number[]
+  opponents: { riichi?: boolean; seat: number; tenpai: number; loss: number; risk: number[]; safe: boolean[]; passed: boolean[] }[]
+}
 export type CoachFacts = {
   seat: number
   num_players: number
@@ -67,6 +78,8 @@ export type CoachFacts = {
   riichi_seats: number[]
   closed_hand: boolean
   candidates: CandidateFacts[]
+  helper?: HelperAnalysis | null
+  helper_error?: string | null
 }
 
 export type BotStatus =

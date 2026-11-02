@@ -94,11 +94,11 @@ export function BotShowList({ items, show, containerRef, variant = 'tile', class
                 {it.value}
               </span>
               {text?.markers[i]?.length ? <span className="flex gap-1 text-xs font-semibold">
-                {text.markers[i].map(marker => <span key={marker} className="rounded bg-muted px-1" title={marker === '守' || marker === 'Defend' ? (zh ? '对已立直者的现物防守' : 'Genbutsu against a riichi player') : (zh ? '牺牲牌效，争取打点；未计算番数' : 'Trades efficiency for potential value; han not calculated')}>{marker}</span>)}
+                {text.markers[i].map(marker => <span key={marker} className="rounded bg-muted px-1" title={zh ? '对所列对手的现物或同巡安全牌；同巡信息可能在摸牌或鸣牌后失效' : 'Genbutsu or a passed tile against the listed players; temporary safety expires after a draw or call'}>{marker}</span>)}
               </span> : null}
               </div>
             )}
-            {coach.available && i < 3 && (!text || text.reasons[i]) && <p className="w-full whitespace-normal break-words text-xs leading-relaxed text-foreground/90">
+            {coach.available && i < 3 && (!text || text.reasons[i]) && <p title={text?.details[i]} className="w-full whitespace-normal break-words text-xs leading-relaxed text-foreground/90">
               {text?.reasons[i] ?? (coach.pending
                 ? (zh ? '正在分析…' : 'Analyzing this decision…')
                 : (zh ? '暂无法取得解释。' : 'Explanation unavailable; the original recommendation is unchanged.'))}

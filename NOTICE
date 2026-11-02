@@ -121,3 +121,12 @@ mjai.app
 
   Subprocess convention reference (JSONL stdin/stdout, argv, env vars,
   end-of-batch flush) in src/bot/ and mjai_bot/. Convention only.
+
+--------------------------------------------------------------------------------
+mahjong-helper Go analysis core (EndlessCheng / Σndless)
+  https://github.com/EndlessCheng/mahjong-helper
+  Commit: 514bb97c5a6d157fa2ed1ac804a53cb9b559d7d0
+  Copyright (c) 2018 Σndless. MIT License.
+  Complete license: coach-go/LICENSE (also bundled as mahjong-helper-LICENSE.txt).
+  util/ vendored with a speed-score numerical boundary fix; JSON adapter and
+  snapshot safety tracking added for Akagi Teacher. No gameplay automation imported.

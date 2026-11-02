@@ -35,6 +35,12 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      - name: Setup Go analysis core
+        uses: actions/setup-go@v5
+        with:
+          go-version-file: coach-go/go.mod
+          cache-dependency-path: coach-go/go.sum
+
       - name: Setup Rust
         uses: dtolnay/rust-toolchain@stable
         with:
@@ -61,6 +67,9 @@ jobs:
             librsvg2-dev \
             libsoup-3.0-dev \
             libssl-dev
+
+      - name: Go analysis tests (with documented upstream baseline)
+        run: python3 scripts/test-go-coach.py
 
       - name: rustfmt
         run: cargo fmt --all -- --check
@@ -90,6 +99,12 @@ jobs:
         os: [macos-14, windows-latest]
     steps:
       - uses: actions/checkout@v4
+
+      - name: Setup Go analysis core
+        uses: actions/setup-go@v5
+        with:
+          go-version-file: coach-go/go.mod
+          cache-dependency-path: coach-go/go.sum
 
       - name: Setup Rust
         uses: dtolnay/rust-toolchain@stable

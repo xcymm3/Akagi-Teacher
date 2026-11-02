@@ -611,7 +611,7 @@ impl BotRunner for NativeBot {
                 );
                 let actions: Vec<_> = local.candidates.iter().take(3)
                     .map(|(a, _)| bot_action_to_mjai(a.clone(), self.seat)).collect();
-                show["coach"] = serde_json::json!({ "snapshot": snapshot, "actions": actions });
+                show["coach"] = serde_json::json!({ "snapshot": snapshot, "actions": actions, "events": self.stream });
             }
         }
         Ok(BotResponse { action, meta })

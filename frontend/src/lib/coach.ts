@@ -1,10 +1,8 @@
-import type { CandidateFacts, CoachFacts, MjaiEvent } from '@/types'
+import type { CoachFacts, HelperMetrics, MjaiEvent } from '@/types'
 
-export type CoachText = { labels: string[]; reasons: string[]; markers: string[][]; summary: string }
+export type CoachText = { labels: string[]; reasons: string[]; markers: string[][]; summary: string; details: string[] }
 
-/** Evidence-based descriptions, not an alleged neural-network thought process.
- * Does not normalize probabilities, reorder candidates, or produce game actions.
- */
+// Pure rendering of independent analysis. Never change policy order/probability/actions.
 export function formatCoach(facts: CoachFacts, language = 'zh-CN'): CoachText {
   const zh = language.startsWith('zh')
   const s = (cn: string, en: string) => zh ? cn : en
@@ -15,16 +13,18 @@ export function formatCoach(facts: CoachFacts, language = 'zh-CN'): CoachText {
     const suit = ({ m: '万', p: '筒', s: '条' } as Record<string, string>)[t[1]]
     return suit ? `${t.endsWith('r') ? '赤' : ''}${t[0]}${suit}` : t
   }
+  const tileId = (t: string) => {
+    const h = ['E', 'S', 'W', 'N', 'P', 'F', 'C'].indexOf(t)
+    return h >= 0 ? 27 + h : 'mps'.indexOf(t[1]) * 9 + Number(t[0]) - 1
+  }
+  const idTile = (id: number) => tile(id >= 27 ? ['E', 'S', 'W', 'N', 'P', 'F', 'C'][id - 27] : `${id % 9 + 1}${'mps'[Math.floor(id / 9)]}`)
   const position = (seat: number) => {
     const relative = (seat - facts.seat + facts.num_players) % facts.num_players
-    // Sanma has no opposite seat: relative 1/2 are the other two players.
-    const names = facts.num_players === 3
-      ? [s('自己', 'you'), s('下家', 'next player'), s('上家', 'previous player')]
-      : [s('自己', 'you'), s('下家', 'next player'), s('对家', 'opposite player'), s('上家', 'previous player')]
-    return names[relative]
+    return facts.num_players === 3
+      ? [s('自己', 'you'), s('下家', 'next player'), s('上家', 'previous player')][relative]
+      : [s('自己', 'you'), s('下家', 'next player'), s('对家', 'opposite player'), s('上家', 'previous player')][relative]
   }
-  const state = (n: number) => n < 0 ? s('和牌形', 'a complete shape')
-    : n === 0 ? s('听牌', 'tenpai') : s(`${n}向听`, `${n}-shanten`)
+  const state = (n: number) => n < 0 ? s('和牌形', 'complete') : n === 0 ? s('听牌', 'tenpai') : s(`${n}向听`, `${n}-shanten`)
   const name = (a: MjaiEvent): string => {
     switch (a.type) {
       case 'dahai': return tile(a.pai)
@@ -38,82 +38,98 @@ export function formatCoach(facts: CoachFacts, language = 'zh-CN'): CoachText {
       default: return s('杠', 'kan')
     }
   }
-  const discards = facts.candidates.filter(c => c.action.type === 'dahai' && c.shanten !== null && c.effective_tiles !== null)
-  const attack = [...discards].sort((a, b) => a.shanten! - b.shanten! || (b.effective_tiles ?? 0) - (a.effective_tiles ?? 0))[0]
-  const markers = facts.candidates.map(c => {
-    const slower = attack && c.shanten !== null && c.effective_tiles !== null &&
-      (c.shanten > attack.shanten! || (c.shanten === attack.shanten && c.effective_tiles < attack.effective_tiles!))
-    const preservesValue = (c.keeps_dora && !c.discards_dora && discards.some(other => other.discards_dora)) ||
-      (c.flush_suit !== null && discards.some(other => other.flush_suit !== c.flush_suit))
-    return [
-      ...(c.safe_against.length ? [s('守', 'Defend')] : []),
-      ...(slower && preservesValue ? [s('贪', 'Value')] : []),
-    ]
+  const helper = facts.helper
+  // Upstream excludes kokushi. Never attach mismatched metrics to that shape.
+  const metric = (i: number): HelperMetrics | null => {
+    const m = helper?.candidates[i]
+    const c = facts.candidates[i]
+    return m && (c.shanten === null || c.shanten === m.shanten) ? m : null
+  }
+  const metrics = facts.candidates.map((_, i) => metric(i))
+  const safe = facts.candidates.map(c => {
+    if (c.action.type !== 'dahai' && c.action.type !== 'reach') return { seats: [] as number[], passed: [] as number[] }
+    const id = c.action.pai ? tileId(c.action.pai) : -1
+    const passed = helper?.opponents.filter(o => o.passed[id]).map(o => o.seat) ?? []
+    const seats = [...new Set([...c.safe_against, ...passed,
+      ...(helper?.opponents.filter(o => o.safe[id] && (o.tenpai >= 50 || facts.riichi_seats.includes(o.seat))).map(o => o.seat) ?? []),
+    ])]
+    return { seats, passed }
   })
-  const reasons = facts.candidates.map((c: CandidateFacts) => {
+  const risk = (i: number) => {
+    const a = facts.candidates[i].action
+    if ((a.type !== 'dahai' && a.type !== 'reach') || !a.pai || !helper) return null
+    const id = tileId(a.pai)
+    return helper.opponents.reduce((sum, o) => sum + (o.risk[id] ?? 0) * o.tenpai / 100, 0)
+  }
+  const risks = facts.candidates.map((_, i) => risk(i))
+  const reasons = facts.candidates.map((c, i) => {
+    const m = metrics[i]
     const parts: string[] = []
-    if (c.shanten !== null && c.effective_tiles !== null) {
-      const peers = c.action.type === 'dahai' ? discards.filter(other => other.shanten === c.shanten) : []
-      const maximum = Math.max(...peers.map(other => other.effective_tiles!))
-      const differentCounts = peers.some(other => other.effective_tiles !== c.effective_tiles)
-      let comparison = ''
-      if (peers.length > 1 && differentCounts && c.effective_tiles === maximum) {
-        const tied = peers.filter(other => other.effective_tiles === maximum).length > 1
-        const scope = peers.length === facts.candidates.length && peers.length === 3
-          ? s('三个候选中', 'among the three candidates')
-          : s('同向听候选中', 'among candidates at the same shanten')
-        comparison = s(`，${scope}${tied ? '并列' : ''}最多`, `, ${tied ? 'joint ' : ''}highest ${scope}`)
-      }
-      parts.push(s(`打出后为${state(c.shanten)}，进张约${c.effective_tiles}枚${comparison}。`,
-        `Leaves ${state(c.shanten)}, with about ${c.effective_tiles} unseen effective tiles${comparison}.`))
-      if (c.shanten > facts.best_shanten) {
-        const difference = c.shanten - facts.best_shanten
-        parts.push(s(`比最低可达向听多${difference}向听。`, `Leaves ${difference} more shanten than the minimum available.`))
-      }
-      if (peers.length > 1 && c.effective_tiles < maximum) {
-        const difference = maximum - c.effective_tiles
-        parts.push(s(`同向听下少约${difference}枚进张。`,
-          `About ${difference} fewer effective tiles than the maximum at this shanten.`))
-      }
-      if (c.safe_against.length) {
-        const opponents = c.safe_against.map(position).join(s('、', ', '))
-        parts.push(s(`${opponents}已立直，这张是其现物，可用于防守。`,
-          `Genbutsu against ${opponents} in riichi; supports defence.`))
-      }
-      if (c.discards_dora) parts.push(s('打出宝牌，降低潜在打点。', 'Discards a dora or red five, giving up potential hand value.'))
-      else if (c.keeps_dora && discards.some(other => other.discards_dora)) parts.push(s('保留宝牌，兼顾打点。', 'Keeps dora for potential hand value.'))
-      if (c.flush_suit !== null) {
-        const suit = ['万', '筒', '条'][c.flush_suit]
-        parts.push(s(`保留${suit}子，争取染手。`,
-          'Keeps a concentrated suit to pursue a flush.'))
-      }
+    const follow = helper?.followup[i] ?? -1
+    if (m) {
+      const after = follow >= 0 ? s(`再打${idTile(follow)}后`, `After discarding ${idTile(follow)}, `) : ''
+      parts.push(s(`${after}${state(m.shanten)}，进张${m.ukeire}枚。`, `${after}${state(m.shanten)}, ${m.ukeire} effective tiles.`))
+    } else if (c.shanten !== null && c.effective_tiles !== null) {
+      parts.push(s(`${state(c.shanten)}，进张${c.effective_tiles}枚。`, `${state(c.shanten)}, ${c.effective_tiles} effective tiles.`))
     }
-    switch (c.action.type) {
-      case 'reach': parts.push(s('增加立直役，之后通常只能摸切。', 'Adds the riichi yaku; later discards are normally forced.')); break
-      case 'chi': case 'pon': if (facts.closed_hand) parts.push(s('副露后失去门清。', 'Opening the hand gives up menzen.')); break
-      case 'ankan': parts.push(facts.closed_hand ? s('暗杠补牌，保留门清。', 'Draws a replacement tile while preserving menzen.') : s('暗杠补牌。', 'Draws a replacement tile.')); break
-      case 'daiminkan': case 'kakan': parts.push(s('开杠补牌，并增加宝牌指示牌。', 'Makes a kan, draws a replacement tile and reveals another dora indicator.')); break
-      case 'none': if (facts.closed_hand) parts.push(s('保留门清。', 'Preserves menzen.')); break
-      case 'hora': break
-      case 'kita': parts.push(s('拔北计宝牌，并补摸一张。', 'Counts North as kita dora and draws a replacement tile.')); break
-      case 'ryukyoku': break
+    // At most two useful differentiators per row. No "not a dora"/generic filler.
+    const extra: string[] = []
+    if (safe[i].passed.length) {
+      const permanent = safe[i].passed.every(seat => helper?.opponents.find(o => o.seat === seat)?.riichi)
+      extra.push(s(`${permanent ? '立直后通过' : '同巡安全'}：${safe[i].passed.map(position).join('、')}。`, `Passed safely against: ${safe[i].passed.map(position).join(', ')}.`))
     }
-    return parts.join(zh ? '' : ' ')
+    else if (safe[i].seats.length) extra.push(s(`现物：${safe[i].seats.map(position).join('、')}。`, `Genbutsu: ${safe[i].seats.map(position).join(', ')}.`))
+    if (m?.furiten === 1) extra.push(s('振听，只能自摸。', 'Furiten; tsumo only.'))
+    else if (m?.part) extra.push(s('部分待牌无役。', 'Some waits have no yaku.'))
+    if (m) {
+      const peers = metrics.filter((p): p is HelperMetrics => p !== null && p.shanten === m.shanten)
+      if (m.shanten === 0) {
+        if (m.riichi > 0 && (i === 0 || peers.some(p => Math.abs(p.riichi - m.riichi) >= 1000))) extra.push(s(`立直打点估算约${Math.round(m.riichi / 100) * 100}点。`, `Estimated riichi value: ${Math.round(m.riichi)} points.`))
+        else if (m.dama > 0 && (i === 0 || peers.some(p => Math.abs(p.dama - m.dama) >= 1000))) extra.push(s(`打点估算约${Math.round(m.dama / 100) * 100}点。`, `Estimated value: ${Math.round(m.dama)} points.`))
+        else if (!facts.closed_hand && m.dama === 0) extra.push(s('当前待牌无役。', 'Current waits have no yaku.'))
+      } else if (m.next > 0 && peers.some(p => p.next > 0 && Math.abs(p.next - m.next) >= 1)) {
+        extra.push(s(`前进一步后平均进张约${m.next.toFixed(1)}枚。`, `Average effective tiles after progress: ${m.next.toFixed(1)}.`))
+      }
+      if (m.improve_tiles.length && m.improve - m.ukeire >= 1 && peers.some(p => Math.abs(p.improve - m.improve) >= 1)) {
+        extra.push(s(`摸${m.improve_tiles.slice(0, 2).map(idTile).join('、')}等可改良进张。`, `Draws such as ${m.improve_tiles.slice(0, 2).map(idTile).join(', ')} improve acceptance.`))
+      }
+      const r = risks[i]
+      if (!safe[i].seats.length && r !== null && r > 0 && risks.some(p => p !== null && p > r + 1)) {
+        extra.push(s('综合危险度较低。', 'Lower combined risk.'))
+      }
+      // Yaku names are a union of reachable branches, not a guaranteed final yaku.
+      const yaku = m.yaku.filter(y => !/立直|平和|一发|門前|门前|断幺/.test(y)).slice(0, 1)
+      if (yaku.length && peers.some(p => !p.yaku.includes(yaku[0]))) extra.push(s(`可观察${yaku[0].replaceAll('[', '').replaceAll(']', '')}方向。`, `Possible yaku direction: ${yaku[0]}.`))
+    }
+    if (!parts.length && (c.action.type === 'chi' || c.action.type === 'pon') && facts.closed_hand) extra.push(s('副露后失去门清。', 'Opening gives up menzen.'))
+    return [...parts, ...extra.slice(0, 2)].join(zh ? '' : ' ')
   })
-  // Compare only measured discard outcomes. The first candidate remains the
-  // policy's first choice; ukeire is an immediate count, not an overall value.
-  const first = facts.candidates[0]
   let summary = ''
-  if (first && discards.includes(first) && attack) {
-    if (first.shanten === attack.shanten && first.effective_tiles === attack.effective_tiles) {
-      summary = s(`建议打${name(first.action)}。`, `Discard ${name(first.action)}.`)
-    } else if (attack.shanten! < first.shanten!) {
-      summary = s(`模型首选${name(first.action)}；但${name(attack.action)}打出后为${state(attack.shanten!)}，向听数更低。`,
-        `The model prefers ${name(first.action)}; ${name(attack.action)} leaves ${state(attack.shanten!)}, a lower shanten.`)
+  const preferred = helper?.preferred_index ?? -1
+  if (preferred >= 0 && preferred < metrics.length && metrics[0] && metrics[preferred]) {
+    const a = metrics[0]!, b = metrics[preferred]!
+    if (preferred === 0) {
+      summary = s(`建议${facts.candidates[0].action.type === 'dahai' ? '打' : ''}${name(facts.candidates[0].action)}。`, `Prefer ${name(facts.candidates[0].action)}.`)
     } else {
-      summary = s(`模型首选${name(first.action)}；但${name(attack.action)}的即时进张更多。`,
-        `The model prefers ${name(first.action)}; ${name(attack.action)} has more immediate effective tiles.`)
+      const alternative = name(facts.candidates[preferred].action)
+      let why = s('综合牌理评分更高', 'a higher combined hand score')
+      if (b.shanten < a.shanten) why = s(`出牌后为${state(b.shanten)}，向听更低`, `lower shanten: ${state(b.shanten)}`)
+      else if (b.shanten === 0 && b.round > a.round + 100) why = s('和率与打点的综合收益估算更高', 'higher estimated return combining win rate and value')
+      else if (b.shanten === 1 && b.round * b.ukeire > a.round * a.ukeire) why = s('听牌机会与收益的综合评分更高', 'a higher score combining acceptance and return')
+      else if (b.speed > a.speed + 0.1) why = s('后续进张与速度评分更高', 'a higher speed score including subsequent acceptance')
+      else if (b.ukeire > a.ukeire) why = s('即时进张更多', 'more immediate effective tiles')
+      else if (b.improve > a.improve + 0.1) why = s('改良后的平均进张更高', 'higher average acceptance with improvements')
+      summary = s(`模型首选${name(facts.candidates[0].action)}；${alternative}${why}。`, `The model prefers ${name(facts.candidates[0].action)}; ${alternative} has ${why}.`)
     }
   }
-  return { labels: facts.candidates.map(c => name(c.action)), reasons, markers, summary }
+  if (!helper && facts.helper_error) summary = s('深入分析暂不可用，当前显示基础牌效。', 'Deeper analysis unavailable; showing basic efficiency.')
+  const details = metrics.map((m, i) => m ? [
+    s(`进张 ${m.ukeire}；改良参考 ${m.improve.toFixed(1)}；前进后 ${m.next.toFixed(1)}`, `Acceptance ${m.ukeire}; improvement ${m.improve.toFixed(1)}; next ${m.next.toFixed(1)}`),
+    s(`速度评分 ${m.speed.toFixed(2)}；待牌和率参考 ${m.win.toFixed(1)}%`, `Speed score ${m.speed.toFixed(2)}; wait win-rate reference ${m.win.toFixed(1)}%`),
+    s(`立直打点 ${Math.round(m.riichi)}；默听/副露打点 ${Math.round(m.dama)}；收支评分 ${Math.round(m.round)}`, `Riichi ${Math.round(m.riichi)}; dama/open ${Math.round(m.dama)}; return score ${Math.round(m.round)}`),
+    s(`综合风险指数 ${(risks[i] ?? 0).toFixed(2)}（包含失点修正，非放铳率）`, `Combined risk index ${(risks[i] ?? 0).toFixed(2)} (loss-adjusted, not deal-in probability)`),
+    ...(helper?.reference_only ? [s('三麻统计沿用参考估算。', 'Sanma statistics are reference estimates.')] : []),
+  ].join('\n') : '')
+  return { labels: facts.candidates.map(c => name(c.action)), reasons, details,
+    markers: safe.map(v => v.seats.length ? [s('守', 'Defend')] : []), summary }
 }

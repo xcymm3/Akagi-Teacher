@@ -66,3 +66,11 @@ native_bot/out/
 
 # ZCode session artifacts
 .zcode/
+
+# Local Go analysis build artifacts
+/coach-go/coach.exe
+/coach-go/coach
+
+# Upstream non-Go reference material (not part of the analysis core)
+/coach-go/util/tenhou/
+/coach-go/util/mjscore/

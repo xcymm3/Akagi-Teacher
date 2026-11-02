@@ -22,5 +22,42 @@ fn main() {
     let target = env::var("TARGET").expect("TARGET not set by cargo");
     println!("cargo:rustc-env=TARGET_TRIPLE={target}");
 
+    // Compile a self-contained analysis-only Go helper and embed it in Akagi.
+    // No Go installation is needed on the end user's computer.
+    let (goos, goarch) = match target.as_str() {
+        "x86_64-pc-windows-msvc" => ("windows", "amd64"),
+        "aarch64-pc-windows-msvc" => ("windows", "arm64"),
+        "x86_64-unknown-linux-gnu" => ("linux", "amd64"),
+        "aarch64-unknown-linux-gnu" => ("linux", "arm64"),
+        "x86_64-apple-darwin" => ("darwin", "amd64"),
+        "aarch64-apple-darwin" => ("darwin", "arm64"),
+        _ => panic!("Go coach: unsupported build target {target}"),
+    };
+    let helper = out_dir.join(if goos == "windows" {
+        "akagi-coach-core.exe"
+    } else {
+        "akagi-coach-core"
+    });
+    let go = env::var("GO").unwrap_or_else(|_| "go".into());
+    let status = std::process::Command::new(go)
+        .current_dir("coach-go")
+        .env("CGO_ENABLED", "0")
+        .env("GOOS", goos)
+        .env("GOARCH", goarch)
+        .args([
+            "build",
+            "-mod=readonly",
+            "-trimpath",
+            "-ldflags=-s -w",
+            "-o",
+        ])
+        .arg(&helper)
+        .arg("./cmd/coach")
+        .status()
+        .expect("Go coach build requires Go >= 1.23; install Go or set GO to its executable");
+    assert!(status.success(), "Go coach compilation failed");
+    println!("cargo:rustc-env=AKAGI_COACH_BINARY={}", helper.display());
+    println!("cargo:rerun-if-changed=coach-go");
+    println!("cargo:rerun-if-env-changed=GO");
     tauri_build::build();
 }
