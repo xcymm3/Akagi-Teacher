@@ -1,0 +1,156 @@
+{
+  "measured_games": 10,
+  "measured_decisions": 6490,
+  "measured_seconds": 7.542885560018476,
+  "seconds_per_game": 0.7542885560018476,
+  "per_game_min_max_seconds": [
+    0.6004001199908089,
+    1.1034313499985728
+  ],
+  "per_game_sample_std_seconds": 0.1485573399760293,
+  "decisions_per_game": 649.0,
+  "single_table_1000_seconds_linear_estimate": 754.2885560018476,
+  "cpu_seconds_per_decision_excluding_inference": 0.0004097855861325177,
+  "measured_process_core_equivalents": 1.0036942229548362,
+  "scenarios": [
+    {
+      "workers": 4,
+      "tables": 16,
+      "inference_batch": 16,
+      "cpu_capacity_upper_decisions_per_second": 9761.202285691103,
+      "measured_inference_capacity_decisions_per_second": 23501.17258176256,
+      "unmeasured_system_efficiency_assumption": [
+        0.25,
+        0.5
+      ],
+      "estimated_decisions_per_second": [
+        2440.3005714227756,
+        4880.601142845551
+      ],
+      "estimated_1000_game_steady_seconds": [
+        132.97542270000199,
+        265.95084540000397
+      ],
+      "unmeasured_startup_allowance_seconds": [
+        10,
+        20
+      ],
+      "estimated_1000_game_total_seconds": [
+        142.97542270000199,
+        285.95084540000397
+      ],
+      "estimated_job_memory_gib": [
+        2.2829666137695312,
+        4.029506683349609
+      ],
+      "estimated_host_memory_pct_including_background": [
+        6.839792423909119,
+        8.231299037961055
+      ],
+      "cpu_host_pct_budget_from_quarter_workers_to_workers_plus_two": [
+        0.8928571428571428,
+        5.357142857142857
+      ],
+      "full_batch_gpu_duty_proxy_pct_not_validated_utilization": [
+        2.076747926455809,
+        4.153495852911618
+      ]
+    },
+    {
+      "workers": 8,
+      "tables": 32,
+      "inference_batch": 16,
+      "cpu_capacity_upper_decisions_per_second": 19522.404571382205,
+      "measured_inference_capacity_decisions_per_second": 23501.17258176256,
+      "unmeasured_system_efficiency_assumption": [
+        0.25,
+        0.5
+      ],
+      "estimated_decisions_per_second": [
+        4880.601142845551,
+        9761.202285691103
+      ],
+      "estimated_1000_game_steady_seconds": [
+        66.48771135000099,
+        132.97542270000199
+      ],
+      "unmeasured_startup_allowance_seconds": [
+        15,
+        30
+      ],
+      "estimated_1000_game_total_seconds": [
+        81.48771135000099,
+        162.97542270000199
+      ],
+      "estimated_job_memory_gib": [
+        3.3204116821289062,
+        6.049236297607422
+      ],
+      "estimated_host_memory_pct_including_background": [
+        7.666347565403653,
+        9.840461728120253
+      ],
+      "cpu_host_pct_budget_from_quarter_workers_to_workers_plus_two": [
+        1.7857142857142856,
+        8.928571428571429
+      ],
+      "full_batch_gpu_duty_proxy_pct_not_validated_utilization": [
+        4.153495852911618,
+        8.306991705823236
+      ]
+    },
+    {
+      "workers": 16,
+      "tables": 64,
+      "inference_batch": 64,
+      "cpu_capacity_upper_decisions_per_second": 39044.80914276441,
+      "measured_inference_capacity_decisions_per_second": 89021.17544748352,
+      "unmeasured_system_efficiency_assumption": [
+        0.25,
+        0.5
+      ],
+      "estimated_decisions_per_second": [
+        9761.202285691103,
+        19522.404571382205
+      ],
+      "estimated_1000_game_steady_seconds": [
+        33.243855675000496,
+        66.48771135000099
+      ],
+      "unmeasured_startup_allowance_seconds": [
+        20,
+        40
+      ],
+      "estimated_1000_game_total_seconds": [
+        53.243855675000496,
+        106.48771135000099
+      ],
+      "estimated_job_memory_gib": [
+        5.395301818847656,
+        10.088695526123047
+      ],
+      "estimated_host_memory_pct_including_background": [
+        9.31945784839272,
+        13.058787108438649
+      ],
+      "cpu_host_pct_budget_from_quarter_workers_to_workers_plus_two": [
+        3.571428571428571,
+        16.071428571428573
+      ],
+      "full_batch_gpu_duty_proxy_pct_not_validated_utilization": [
+        2.480838975711415,
+        4.96167795142283
+      ]
+    }
+  ],
+  "limitations": [
+    "Only ten frozen-policy hanchan; game lengths and future policies can differ",
+    "Concurrent workers, IPC and batch assembly were NOT benchmarked",
+    "25%-50% efficiency and startup budgets are planning assumptions, not confidence intervals",
+    "All workers must remain CPU-only; one shared GPU inference broker",
+    "GPU duty proxy assumes full batches; real GPU utilization may differ substantially",
+    "Memory bounds use worker USS/RSS plus queue allowance; actual sharing and allocator behavior differ",
+    "No PPO optimizer, rollout buffers, backpropagation, evaluation overhead or checkpointing included"
+  ],
+  "same_seed_scores_ranks_steps_rewards_match_stage3": true
+}
