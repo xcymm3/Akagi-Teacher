@@ -1,12 +1,35 @@
 # 01 模型迁移与 RiichiEnv 适配
 
-本目录完成接入计划的阶段 1–3：独立环境、可训练模型迁移，以及 Akagi 观察、
-动作和事件适配。阶段 3 已完成小规模对战及差分验证，尚未进行正式并发测速、
-大规模稳定性验证或 PPO 训练。阶段结果分别见 `STAGE12_RESULTS.md` 和 `STAGE3_RESULTS.md`。
+本目录包含接入计划的阶段 1–5：独立环境、可训练模型迁移、Akagi 观察/动作/事件适配，
+以及串行稳定性测试和集中 GPU 推理的多 worker 实现。PPO 训练尚未启动。
+阶段 1–3 结果分别见 `STAGE12_RESULTS.md` 和 `STAGE3_RESULTS.md`。
 
 阶段 4 的 10 场生产路径测速已完成：对局部分 7.54 秒；1,000 场串行按均值估算约
-12.6 分钟。批量推理与 CPU worker 内存探针用于阶段 5 预算，尚未实测多 worker 对战。
-具体资源测量、估算假设与复现命令见 `STAGE4_10_RESULTS.md`。
+12.6 分钟。该历史估算见 `STAGE4_10_RESULTS.md`；后续完整 1,000 场串行测试及
+4/8/16 workers 各 1,000 场的实际耗时、资源与验证边界见 `STAGE45_RESULTS.md`。
+
+## 稳定性与多并发（阶段 4、5）
+
+`run_stability.py` 运行冻结 01 的单桌稳定性测试；`run_parallel.py` 使用 spawn 启动
+CPU-only workers，每 worker 默认 4 桌，由主进程集中批量 GPU 推理。请求携带 worker
+及递增序号，每 worker 最多一个在途请求；动作仍经原适配器合法性检查。异常、失联、
+超时或参考结果差异会失败并保存诊断，不会用默认动作继续。没有 PPO 更新或学习逻辑。
+
+`--reference` 比较同种子的分数、名次、步数、决策数及奖励；动作摘要格式相同才比较
+摘要，是否实际比较会写入 `reference_action_trace_compared`。`--verify-actions` 是
+额外的逐样本 GPU 动作对照，会增加耗时，正式压测不启用。每次必须使用新的输出目录。
+
+```bash
+export CUDA_VISIBLE_DEVICES=GPU-b564ea51-9c60-4f6b-1936-0178ed6e2c58
+export OMP_NUM_THREADS=1 MKL_NUM_THREADS=1
+PY=/disk2/Akagi/env/riichienv-01/bin/python
+WEIGHTS=/disk2/Akagi/experiments/runs/01-original-6m/akagi4p.safetensors
+$PY run_stability.py --weights "$WEIGHTS" --games 1000 --out /path/new-serial
+$PY run_parallel.py --weights "$WEIGHTS" --workers 4 --games 1000 \
+  --reference /path/new-serial/summary.json --out /path/new-workers-4
+# 然后分别使用 --workers 8 和 16，指定不同输出目录
+$PY -m unittest -v test_parallel test_adapter
+```
 
 ## 环境适配（阶段 3）
 

@@ -1,0 +1,640 @@
+{
+  "completed": 16,
+  "workers": 4,
+  "tables_per_worker": 4,
+  "games_wall_seconds": 9.73198604900972,
+  "startup_seconds": 3.449174748006044,
+  "total_job_seconds": 13.546488554013195,
+  "broker_cpu_seconds": 10.934868030999999,
+  "worker_stats": [
+    {
+      "kind": "done",
+      "worker": 1,
+      "cpu_seconds": 1.4172237249999997,
+      "memory": {
+        "rss": 541519872,
+        "uss": 279162880,
+        "pss": 330690560
+      },
+      "cuda_initialized": false
+    },
+    {
+      "kind": "done",
+      "worker": 3,
+      "cpu_seconds": 1.644615811,
+      "memory": {
+        "rss": 541822976,
+        "uss": 279240704,
+        "pss": 343610368
+      },
+      "cuda_initialized": false
+    },
+    {
+      "kind": "done",
+      "worker": 0,
+      "cpu_seconds": 1.460840955,
+      "memory": {
+        "rss": 539463680,
+        "uss": 278798336,
+        "pss": 363620352
+      },
+      "cuda_initialized": false
+    },
+    {
+      "kind": "done",
+      "worker": 2,
+      "cpu_seconds": 1.5493484349999997,
+      "memory": {
+        "rss": 539725824,
+        "uss": 279207936,
+        "pss": 364056576
+      },
+      "cuda_initialized": false
+    }
+  ],
+  "batch_histogram": {
+    "4": 89,
+    "12": 19,
+    "13": 1,
+    "8": 576,
+    "9": 63,
+    "10": 21,
+    "7": 301,
+    "11": 12,
+    "5": 28,
+    "6": 97,
+    "3": 159,
+    "2": 196,
+    "1": 487
+  },
+  "verified_singleton_decisions": 10299,
+  "source_weights_sha256": "1ef2672b30ed1674124ee36c76c7b614926dd582c587fc90b9a19bff1c133bc4",
+  "reference_differences": [
+    {
+      "seed": 2026111124,
+      "field": "action_sha256",
+      "serial": "de64057124c464c95b1e4097caeea5eeb90d42ce779c1f4e30b62d38a299f75a",
+      "parallel": "2fb810ca02cc11416bad9918ec6ca525bd7ad5c9f202c3c61ae9000d79ac368f"
+    },
+    {
+      "seed": 2026111128,
+      "field": "action_sha256",
+      "serial": "98d17f49fcae2a7d2a940f3b31fe13222accf0418dda69dbdbab90f1a1596ff5",
+      "parallel": "91a8f7054b72b409f27eb5cf8064323029a9c33e0f6f8aaa570450cdc26ce01b"
+    },
+    {
+      "seed": 2026111112,
+      "field": "action_sha256",
+      "serial": "9b8db7d99b8d3fd0a982e1e572efb6f6236de534e7c507a6f173c35bdacdfcde",
+      "parallel": "65cd760beca5387f8e19a975dbba09a2ed42ad1b8ddd5d9017bfbf68c87b6863"
+    },
+    {
+      "seed": 2026111102,
+      "field": "action_sha256",
+      "serial": "bad415f7b1a9c40217a50bbd64a3b24edd2b9b7a39e79989c15fcf4d92e9a84a",
+      "parallel": "a36fb46e51e6b6635e8c4730654076c56a7d1b04d21fb12b4c92256f70c64362"
+    },
+    {
+      "seed": 2026111122,
+      "field": "action_sha256",
+      "serial": "fca0c3068f9fc1a00f3ac4e63651d9433baa7498f6145e328b6514e666e96e44",
+      "parallel": "89eab6ea064c7c3b5a8a7ce7cc4ce1da20e3a9a96abfe95a65f9b01a384d8259"
+    },
+    {
+      "seed": 2026111106,
+      "field": "action_sha256",
+      "serial": "2678c755ca30c5cffec0bb60843c85a05d26864e054a1b2c2ae8686dacef8e8b",
+      "parallel": "8cfbc09599bc765f693051d8a1a9ebb2ef5504d6386ff409c2a0d1744fcedcd4"
+    },
+    {
+      "seed": 2026111100,
+      "field": "action_sha256",
+      "serial": "aa957ac76829a186b4b5e48ab67401680e4f027d4e3ba7780508a572f042b36d",
+      "parallel": "79c26e6230783893b8e0504d1fb026444b4039853abc0a049e15aebe35a91844"
+    },
+    {
+      "seed": 2026111110,
+      "field": "action_sha256",
+      "serial": "59817e08685e1a0d7ad20f8e522b123acfd58b5fbb17243753a58e151808c7f1",
+      "parallel": "bf1ccb28dfdbff75554b8e4d44d12b7f878089fd313f7131bb602277e3660af6"
+    },
+    {
+      "seed": 2026111104,
+      "field": "action_sha256",
+      "serial": "7ea5948385626751f887ee5cee03a63c3b880eb12faa7ec0ab09c41ca96292ba",
+      "parallel": "578513589a3ca566ee06b65fe71e1c7e88c7682f5b1e23a9895732821b534f5d"
+    },
+    {
+      "seed": 2026111126,
+      "field": "action_sha256",
+      "serial": "d941c792177c369c1a247a2c82750dc839949e18cde3550df177be4a0bd16810",
+      "parallel": "27a9408202c9fd0fb79cb0b9824c749ce25edd6effc3d6d796de5e6108b2fced"
+    },
+    {
+      "seed": 2026111116,
+      "field": "action_sha256",
+      "serial": "822c46e167effd6bccaee09ace913557d54857ed8cf0e0230dfc2e51ed701773",
+      "parallel": "6b36ac8ca938f8ed8853a1798c3e0d768d63cb2714e71df72305064e42a12c48"
+    },
+    {
+      "seed": 2026111118,
+      "field": "action_sha256",
+      "serial": "f8872399204fa25f9e6b92ce9e588eca97786b7fa504b890978b2c5e1c0e2ade",
+      "parallel": "7ce6659e87f6b74573ee654ebcb573e720e16cd313756394f4ad0c362952fb53"
+    },
+    {
+      "seed": 2026111114,
+      "field": "action_sha256",
+      "serial": "d5ef7609c6724b4ac617dfbacd69aa8c0383a633c52032ea99430e2b3e2b958a",
+      "parallel": "44c0fe862f91b22fb95bfeeaf04cc4381d660ad9b05f3b789db2525cb11c3246"
+    },
+    {
+      "seed": 2026111130,
+      "field": "action_sha256",
+      "serial": "1b2bc2e34a5c5d00f8588d27bda0bdab4238645c2c43879e7defa3127533f96f",
+      "parallel": "fc4030afeee053a3ead2aead0822b84269b768886152f92d6e7c73655b25d3a5"
+    },
+    {
+      "seed": 2026111108,
+      "field": "action_sha256",
+      "serial": "aec0cd7c89381ff99695bc3a434a2ad0ff8b832f1edd5ace54b6053a564a984b",
+      "parallel": "c9cbd61b61b3c71dd6f13065c41ea86961ddee5e73e28e143adc086e1a3436b7"
+    },
+    {
+      "seed": 2026111120,
+      "field": "action_sha256",
+      "serial": "18e685c6c6a0ca9d0cd3a88c3164480ec78cbfc00ca9afaad7490147c81674e5",
+      "parallel": "cd8517e5f32df78dd43f99d33e91526254477b2ec49c31699c4170b51a8164a1"
+    }
+  ],
+  "resources": {
+    "cpu": {
+      "samples": 40,
+      "broker_cpu_pct_one_core": {
+        "mean": 111.36750000000002,
+        "max": 119.4,
+        "p95": 115.705
+      },
+      "host_cpu_pct": {
+        "mean": 1.9474999999999998,
+        "max": 3.1,
+        "p95": 2.3249999999999984
+      },
+      "tree_rss_sum_bytes": {
+        "mean": 3194930892.8,
+        "max": 3279048704,
+        "p95": 3279044812.8
+      },
+      "host_memory_used_bytes": {
+        "mean": 8279498956.8,
+        "max": 8324358144,
+        "p95": 8321576550.4
+      },
+      "host_memory_pct": {
+        "mean": 6.17,
+        "max": 6.2,
+        "p95": 6.2
+      },
+      "host_memory_available_bytes": {
+        "mean": 126490476339.2,
+        "max": 126918275072,
+        "p95": 126752715571.2
+      }
+    },
+    "gpu": {
+      "samples": 49,
+      "gpu_util_pct": {
+        "mean": 16.489795918367346,
+        "max": 18.0,
+        "p95": 18.0
+      },
+      "memory_controller_util_pct": {
+        "mean": 0.0,
+        "max": 0.0,
+        "p95": 0.0
+      },
+      "used_mib": {
+        "mean": 503.0,
+        "max": 503.0,
+        "p95": 503.0
+      },
+      "total_mib": {
+        "mean": 49140.0,
+        "max": 49140.0,
+        "p95": 49140.0
+      },
+      "power_w": {
+        "mean": 68.81836734693877,
+        "max": 69.98,
+        "p95": 69.964
+      }
+    }
+  },
+  "broker_memory": {
+    "rss": 1085620224,
+    "uss": 1068142592,
+    "pss": 1072472064
+  },
+  "games": [
+    {
+      "seed": 2026111100,
+      "steps": 588,
+      "decisions": 593,
+      "scores": [
+        34600,
+        21300,
+        26700,
+        17400
+      ],
+      "ranks": [
+        1,
+        3,
+        2,
+        4
+      ],
+      "rewards": [
+        2.0,
+        0.0,
+        1.0,
+        -3.0
+      ],
+      "action_sha256": "79c26e6230783893b8e0504d1fb026444b4039853abc0a049e15aebe35a91844",
+      "seconds": 7.7564621179772075
+    },
+    {
+      "seed": 2026111102,
+      "steps": 529,
+      "decisions": 533,
+      "scores": [
+        15100,
+        8500,
+        27700,
+        48700
+      ],
+      "ranks": [
+        3,
+        4,
+        2,
+        1
+      ],
+      "rewards": [
+        0.0,
+        -3.0,
+        1.0,
+        2.0
+      ],
+      "action_sha256": "a36fb46e51e6b6635e8c4730654076c56a7d1b04d21fb12b4c92256f70c64362",
+      "seconds": 7.128164319001371
+    },
+    {
+      "seed": 2026111104,
+      "steps": 598,
+      "decisions": 604,
+      "scores": [
+        9700,
+        30200,
+        17100,
+        43000
+      ],
+      "ranks": [
+        4,
+        2,
+        3,
+        1
+      ],
+      "rewards": [
+        -3.0,
+        1.0,
+        0.0,
+        2.0
+      ],
+      "action_sha256": "578513589a3ca566ee06b65fe71e1c7e88c7682f5b1e23a9895732821b534f5d",
+      "seconds": 7.849903547990834
+    },
+    {
+      "seed": 2026111106,
+      "steps": 574,
+      "decisions": 580,
+      "scores": [
+        15300,
+        28700,
+        20600,
+        35400
+      ],
+      "ranks": [
+        4,
+        2,
+        3,
+        1
+      ],
+      "rewards": [
+        -3.0,
+        1.0,
+        0.0,
+        2.0
+      ],
+      "action_sha256": "8cfbc09599bc765f693051d8a1a9ebb2ef5504d6386ff409c2a0d1744fcedcd4",
+      "seconds": 7.6314348990272265
+    },
+    {
+      "seed": 2026111108,
+      "steps": 946,
+      "decisions": 956,
+      "scores": [
+        45500,
+        1900,
+        16400,
+        36200
+      ],
+      "ranks": [
+        1,
+        4,
+        3,
+        2
+      ],
+      "rewards": [
+        2.0,
+        -3.0,
+        0.0,
+        1.0
+      ],
+      "action_sha256": "c9cbd61b61b3c71dd6f13065c41ea86961ddee5e73e28e143adc086e1a3436b7",
+      "seconds": 9.401802782987943
+    },
+    {
+      "seed": 2026111110,
+      "steps": 599,
+      "decisions": 605,
+      "scores": [
+        -1900,
+        32200,
+        44600,
+        25100
+      ],
+      "ranks": [
+        4,
+        2,
+        1,
+        3
+      ],
+      "rewards": [
+        -3.0,
+        1.0,
+        2.0,
+        0.0
+      ],
+      "action_sha256": "bf1ccb28dfdbff75554b8e4d44d12b7f878089fd313f7131bb602277e3660af6",
+      "seconds": 7.837659063981846
+    },
+    {
+      "seed": 2026111112,
+      "steps": 514,
+      "decisions": 517,
+      "scores": [
+        29300,
+        45500,
+        25400,
+        -200
+      ],
+      "ranks": [
+        2,
+        1,
+        3,
+        4
+      ],
+      "rewards": [
+        1.0,
+        2.0,
+        0.0,
+        -3.0
+      ],
+      "action_sha256": "65cd760beca5387f8e19a975dbba09a2ed42ad1b8ddd5d9017bfbf68c87b6863",
+      "seconds": 6.987722896010382
+    },
+    {
+      "seed": 2026111114,
+      "steps": 753,
+      "decisions": 761,
+      "scores": [
+        23700,
+        29300,
+        9300,
+        37700
+      ],
+      "ranks": [
+        3,
+        2,
+        4,
+        1
+      ],
+      "rewards": [
+        0.0,
+        1.0,
+        -3.0,
+        2.0
+      ],
+      "action_sha256": "44c0fe862f91b22fb95bfeeaf04cc4381d660ad9b05f3b789db2525cb11c3246",
+      "seconds": 8.711044130002847
+    },
+    {
+      "seed": 2026111116,
+      "steps": 608,
+      "decisions": 618,
+      "scores": [
+        28000,
+        16500,
+        23500,
+        32000
+      ],
+      "ranks": [
+        2,
+        4,
+        3,
+        1
+      ],
+      "rewards": [
+        1.0,
+        -3.0,
+        0.0,
+        2.0
+      ],
+      "action_sha256": "6b36ac8ca938f8ed8853a1798c3e0d768d63cb2714e71df72305064e42a12c48",
+      "seconds": 7.918623817997286
+    },
+    {
+      "seed": 2026111118,
+      "steps": 717,
+      "decisions": 723,
+      "scores": [
+        1100,
+        23600,
+        38400,
+        36900
+      ],
+      "ranks": [
+        4,
+        3,
+        1,
+        2
+      ],
+      "rewards": [
+        -3.0,
+        0.0,
+        2.0,
+        1.0
+      ],
+      "action_sha256": "7ce6659e87f6b74573ee654ebcb573e720e16cd313756394f4ad0c362952fb53",
+      "seconds": 8.519437445997028
+    },
+    {
+      "seed": 2026111120,
+      "steps": 1100,
+      "decisions": 1115,
+      "scores": [
+        16600,
+        36000,
+        25000,
+        22400
+      ],
+      "ranks": [
+        4,
+        1,
+        2,
+        3
+      ],
+      "rewards": [
+        -3.0,
+        2.0,
+        1.0,
+        0.0
+      ],
+      "action_sha256": "cd8517e5f32df78dd43f99d33e91526254477b2ec49c31699c4170b51a8164a1",
+      "seconds": 9.723559451987967
+    },
+    {
+      "seed": 2026111122,
+      "steps": 558,
+      "decisions": 564,
+      "scores": [
+        31000,
+        14700,
+        6800,
+        47500
+      ],
+      "ranks": [
+        2,
+        3,
+        4,
+        1
+      ],
+      "rewards": [
+        1.0,
+        0.0,
+        -3.0,
+        2.0
+      ],
+      "action_sha256": "89eab6ea064c7c3b5a8a7ce7cc4ce1da20e3a9a96abfe95a65f9b01a384d8259",
+      "seconds": 7.477762330003316
+    },
+    {
+      "seed": 2026111124,
+      "steps": 167,
+      "decisions": 172,
+      "scores": [
+        -600,
+        25000,
+        49600,
+        26000
+      ],
+      "ranks": [
+        4,
+        3,
+        1,
+        2
+      ],
+      "rewards": [
+        -3.0,
+        0.0,
+        2.0,
+        1.0
+      ],
+      "action_sha256": "2fb810ca02cc11416bad9918ec6ca525bd7ad5c9f202c3c61ae9000d79ac368f",
+      "seconds": 2.3783825550053734
+    },
+    {
+      "seed": 2026111126,
+      "steps": 601,
+      "decisions": 610,
+      "scores": [
+        26600,
+        20300,
+        12700,
+        40400
+      ],
+      "ranks": [
+        2,
+        3,
+        4,
+        1
+      ],
+      "rewards": [
+        1.0,
+        0.0,
+        -3.0,
+        2.0
+      ],
+      "action_sha256": "27a9408202c9fd0fb79cb0b9824c749ce25edd6effc3d6d796de5e6108b2fced",
+      "seconds": 7.852961227996275
+    },
+    {
+      "seed": 2026111128,
+      "steps": 492,
+      "decisions": 501,
+      "scores": [
+        61000,
+        -7900,
+        31700,
+        15200
+      ],
+      "ranks": [
+        1,
+        4,
+        2,
+        3
+      ],
+      "rewards": [
+        2.0,
+        -3.0,
+        1.0,
+        0.0
+      ],
+      "action_sha256": "91a8f7054b72b409f27eb5cf8064323029a9c33e0f6f8aaa570450cdc26ce01b",
+      "seconds": 6.714542705012718
+    },
+    {
+      "seed": 2026111130,
+      "steps": 834,
+      "decisions": 847,
+      "scores": [
+        35000,
+        -5500,
+        31400,
+        39100
+      ],
+      "ranks": [
+        2,
+        4,
+        3,
+        1
+      ],
+      "rewards": [
+        1.0,
+        -3.0,
+        0.0,
+        2.0
+      ],
+      "action_sha256": "fc4030afeee053a3ead2aead0822b84269b768886152f92d6e7c73655b25d3a5",
+      "seconds": 9.035316062014317
+    }
+  ]
+}

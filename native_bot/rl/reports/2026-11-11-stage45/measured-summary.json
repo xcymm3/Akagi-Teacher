@@ -1,0 +1,165 @@
+[
+  {
+    "file": "serial-1000.json",
+    "workers": 0,
+    "tables": 1,
+    "completed": 1000,
+    "decisions": 682864,
+    "games_seconds": 792.8627790450118,
+    "total_job_seconds": 794.8866887339973,
+    "games_per_second": 1.2612522953902325,
+    "cpu_core_equivalents": 1.0031510015642269,
+    "task_cpu_host_pct_112_logical": 0.8956705371109168,
+    "host_cpu_pct": {
+      "mean": 1.2093884800811978,
+      "max": 3.2,
+      "p95": 1.9
+    },
+    "gpu_util_pct": {
+      "mean": 10.985862156021208,
+      "max": 12.0,
+      "p95": 11.0
+    },
+    "vram_mib": {
+      "mean": 503.0,
+      "max": 503.0,
+      "p95": 503.0
+    },
+    "host_memory_pct": {
+      "mean": 5.297589444303475,
+      "max": 5.7,
+      "p95": 5.3
+    },
+    "source_weights_sha256": "1ef2672b30ed1674124ee36c76c7b614926dd582c587fc90b9a19bff1c133bc4",
+    "mean_game_seconds": 0.7923433786917303,
+    "min_game_seconds": 0.11002989698317833,
+    "max_game_seconds": 1.4807074069976807,
+    "rss_at_first_snapshot_gib": 1.0083808898925781,
+    "rss_at_last_snapshot_gib": 1.0132637023925781,
+    "task_peak_rss_gib": 1.0132637023925781,
+    "speedup_vs_serial": 1.0
+  },
+  {
+    "file": "workers-4.json",
+    "workers": 4,
+    "tables": 16,
+    "completed": 1000,
+    "decisions": 682864,
+    "games_seconds": 122.40417795200483,
+    "total_job_seconds": 126.24648152702139,
+    "games_per_second": 8.16965578080271,
+    "cpu_core_equivalents": 3.2688473033975103,
+    "task_cpu_host_pct_112_logical": 2.918613663747777,
+    "host_cpu_pct": {
+      "mean": 3.217551020408163,
+      "max": 4.8,
+      "p95": 3.9
+    },
+    "gpu_util_pct": {
+      "mean": 13.799019607843137,
+      "max": 16.0,
+      "p95": 15.0
+    },
+    "vram_mib": {
+      "mean": 503.0,
+      "max": 503.0,
+      "p95": 503.0
+    },
+    "host_memory_pct": {
+      "mean": 6.108367346938774,
+      "max": 6.2,
+      "p95": 6.2
+    },
+    "source_weights_sha256": "1ef2672b30ed1674124ee36c76c7b614926dd582c587fc90b9a19bff1c133bc4",
+    "startup_seconds": 3.4534643689985387,
+    "average_batch": 5.386552235509418,
+    "reference_differences": 0,
+    "reference_action_trace_compared": false,
+    "all_workers_cpu_only": true,
+    "task_end_uss_gib": 2.04107666015625,
+    "task_peak_rss_sum_gib": 3.0766754150390625,
+    "speedup_vs_serial": 6.477415986208384
+  },
+  {
+    "file": "workers-8.json",
+    "workers": 8,
+    "tables": 32,
+    "completed": 1000,
+    "decisions": 682864,
+    "games_seconds": 65.34847828600323,
+    "total_job_seconds": 69.17179424400092,
+    "games_per_second": 15.302575151381706,
+    "cpu_core_equivalents": 5.241660921083243,
+    "task_cpu_host_pct_112_logical": 4.680054393824324,
+    "host_cpu_pct": {
+      "mean": 5.024603174603174,
+      "max": 5.9,
+      "p95": 5.6
+    },
+    "gpu_util_pct": {
+      "mean": 13.62079510703364,
+      "max": 15.0,
+      "p95": 15.0
+    },
+    "vram_mib": {
+      "mean": 505.0,
+      "max": 505.0,
+      "p95": 505.0
+    },
+    "host_memory_pct": {
+      "mean": 6.96984126984127,
+      "max": 7.0,
+      "p95": 7.0
+    },
+    "source_weights_sha256": "1ef2672b30ed1674124ee36c76c7b614926dd582c587fc90b9a19bff1c133bc4",
+    "startup_seconds": 3.4722811649844516,
+    "average_batch": 10.502206979283615,
+    "reference_differences": 0,
+    "reference_action_trace_compared": true,
+    "all_workers_cpu_only": true,
+    "task_end_uss_gib": 3.0877838134765625,
+    "task_peak_rss_sum_gib": 5.078380584716797,
+    "speedup_vs_serial": 12.132842261069642
+  },
+  {
+    "file": "workers-16.json",
+    "workers": 16,
+    "tables": 64,
+    "completed": 1000,
+    "decisions": 682864,
+    "games_seconds": 36.418351767002605,
+    "total_job_seconds": 40.3754329259973,
+    "games_per_second": 27.458683643834345,
+    "cpu_core_equivalents": 8.515733850096892,
+    "task_cpu_host_pct_112_logical": 7.603333794729368,
+    "host_cpu_pct": {
+      "mean": 8.158394160583942,
+      "max": 12.5,
+      "p95": 9.6
+    },
+    "gpu_util_pct": {
+      "mean": 12.56043956043956,
+      "max": 14.0,
+      "p95": 14.0
+    },
+    "vram_mib": {
+      "mean": 505.0,
+      "max": 505.0,
+      "p95": 505.0
+    },
+    "host_memory_pct": {
+      "mean": 8.578832116788323,
+      "max": 8.7,
+      "p95": 8.7
+    },
+    "source_weights_sha256": "1ef2672b30ed1674124ee36c76c7b614926dd582c587fc90b9a19bff1c133bc4",
+    "startup_seconds": 3.5533387970062904,
+    "average_batch": 21.02413793103448,
+    "reference_differences": 0,
+    "reference_action_trace_compared": true,
+    "all_workers_cpu_only": true,
+    "task_end_uss_gib": 5.174579620361328,
+    "task_peak_rss_sum_gib": 9.079383850097656,
+    "speedup_vs_serial": 21.77096822276831
+  }
+]

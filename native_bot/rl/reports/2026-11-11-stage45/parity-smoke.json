@@ -1,0 +1,560 @@
+{
+  "completed": 16,
+  "workers": 4,
+  "tables_per_worker": 4,
+  "games_wall_seconds": 10.065549647988519,
+  "startup_seconds": 3.427039860980585,
+  "total_job_seconds": 13.79414342099335,
+  "broker_cpu_seconds": 11.510191286,
+  "worker_stats": [
+    {
+      "kind": "done",
+      "worker": 1,
+      "cpu_seconds": 1.532077055,
+      "memory": {
+        "rss": 541118464,
+        "uss": 279154688,
+        "pss": 330631168
+      },
+      "cuda_initialized": false
+    },
+    {
+      "kind": "done",
+      "worker": 3,
+      "cpu_seconds": 1.659497596,
+      "memory": {
+        "rss": 541290496,
+        "uss": 279236608,
+        "pss": 343410688
+      },
+      "cuda_initialized": false
+    },
+    {
+      "kind": "done",
+      "worker": 0,
+      "cpu_seconds": 1.5303493969999997,
+      "memory": {
+        "rss": 539459584,
+        "uss": 278691840,
+        "pss": 363549696
+      },
+      "cuda_initialized": false
+    },
+    {
+      "kind": "done",
+      "worker": 2,
+      "cpu_seconds": 1.7235416600000002,
+      "memory": {
+        "rss": 539856896,
+        "uss": 280801280,
+        "pss": 405177344
+      },
+      "cuda_initialized": false
+    }
+  ],
+  "batch_histogram": {
+    "4": 179,
+    "12": 152,
+    "13": 16,
+    "5": 94,
+    "14": 3,
+    "3": 148,
+    "8": 324,
+    "7": 378,
+    "10": 3,
+    "9": 26,
+    "6": 33,
+    "2": 205,
+    "1": 485
+  },
+  "verified_singleton_decisions": 10299,
+  "source_weights_sha256": "1ef2672b30ed1674124ee36c76c7b614926dd582c587fc90b9a19bff1c133bc4",
+  "reference_differences": [],
+  "reference_action_trace_compared": true,
+  "resources": {
+    "cpu": {
+      "samples": 40,
+      "broker_cpu_pct_one_core": {
+        "mean": 113.34250000000002,
+        "max": 122.7,
+        "p95": 119.52
+      },
+      "host_cpu_pct": {
+        "mean": 1.9649999999999999,
+        "max": 2.6,
+        "p95": 2.3049999999999997
+      },
+      "tree_rss_sum_bytes": {
+        "mean": 3181275238.4,
+        "max": 3293835264,
+        "p95": 3278295040.0
+      },
+      "host_memory_used_bytes": {
+        "mean": 8255500800.0,
+        "max": 8336478208,
+        "p95": 8330695884.8
+      },
+      "host_memory_pct": {
+        "mean": 6.135,
+        "max": 6.2,
+        "p95": 6.2
+      },
+      "host_memory_available_bytes": {
+        "mean": 126514474496.0,
+        "max": 127035699200,
+        "p95": 126782916403.2
+      }
+    },
+    "gpu": {
+      "samples": 50,
+      "gpu_util_pct": {
+        "mean": 13.2,
+        "max": 15.0,
+        "p95": 15.0
+      },
+      "memory_controller_util_pct": {
+        "mean": 0.0,
+        "max": 0.0,
+        "p95": 0.0
+      },
+      "used_mib": {
+        "mean": 503.0,
+        "max": 503.0,
+        "p95": 503.0
+      },
+      "total_mib": {
+        "mean": 49140.0,
+        "max": 49140.0,
+        "p95": 49140.0
+      },
+      "power_w": {
+        "mean": 67.632,
+        "max": 68.7,
+        "p95": 68.6685
+      }
+    }
+  },
+  "broker_memory": {
+    "rss": 1084751872,
+    "uss": 1067319296,
+    "pss": 1071648768
+  },
+  "games": [
+    {
+      "seed": 2026111100,
+      "steps": 588,
+      "decisions": 593,
+      "scores": [
+        34600,
+        21300,
+        26700,
+        17400
+      ],
+      "ranks": [
+        1,
+        3,
+        2,
+        4
+      ],
+      "rewards": [
+        2.0,
+        0.0,
+        1.0,
+        -3.0
+      ],
+      "action_sha256": "e09f442e4b75f9bcee02125844b5908980a56cd9e9afa1360ce0831006e7dccc",
+      "action_trace_format": "sorted-seats-v1",
+      "seconds": 8.045465686998796
+    },
+    {
+      "seed": 2026111102,
+      "steps": 529,
+      "decisions": 533,
+      "scores": [
+        15100,
+        8500,
+        27700,
+        48700
+      ],
+      "ranks": [
+        3,
+        4,
+        2,
+        1
+      ],
+      "rewards": [
+        0.0,
+        -3.0,
+        1.0,
+        2.0
+      ],
+      "action_sha256": "a36fb46e51e6b6635e8c4730654076c56a7d1b04d21fb12b4c92256f70c64362",
+      "action_trace_format": "sorted-seats-v1",
+      "seconds": 7.416546027990989
+    },
+    {
+      "seed": 2026111104,
+      "steps": 598,
+      "decisions": 604,
+      "scores": [
+        9700,
+        30200,
+        17100,
+        43000
+      ],
+      "ranks": [
+        4,
+        2,
+        3,
+        1
+      ],
+      "rewards": [
+        -3.0,
+        1.0,
+        0.0,
+        2.0
+      ],
+      "action_sha256": "d4c9ea3a2288f9e2511037bd8ce2844b06b6a502f94f3a464f615942ed02b1be",
+      "action_trace_format": "sorted-seats-v1",
+      "seconds": 8.13209628299228
+    },
+    {
+      "seed": 2026111106,
+      "steps": 574,
+      "decisions": 580,
+      "scores": [
+        15300,
+        28700,
+        20600,
+        35400
+      ],
+      "ranks": [
+        4,
+        2,
+        3,
+        1
+      ],
+      "rewards": [
+        -3.0,
+        1.0,
+        0.0,
+        2.0
+      ],
+      "action_sha256": "b85c9d27d3d4747a7edc91b89b7fa3cceee18b168311a390d157b635079ef880",
+      "action_trace_format": "sorted-seats-v1",
+      "seconds": 7.9091893779987
+    },
+    {
+      "seed": 2026111108,
+      "steps": 946,
+      "decisions": 956,
+      "scores": [
+        45500,
+        1900,
+        16400,
+        36200
+      ],
+      "ranks": [
+        1,
+        4,
+        3,
+        2
+      ],
+      "rewards": [
+        2.0,
+        -3.0,
+        0.0,
+        1.0
+      ],
+      "action_sha256": "c8c39098fcacd60d0f714a2cdb89f23fd5201647fac8ebec6dd9844e5443beb8",
+      "action_trace_format": "sorted-seats-v1",
+      "seconds": 9.710355535993585
+    },
+    {
+      "seed": 2026111110,
+      "steps": 599,
+      "decisions": 605,
+      "scores": [
+        -1900,
+        32200,
+        44600,
+        25100
+      ],
+      "ranks": [
+        4,
+        2,
+        1,
+        3
+      ],
+      "rewards": [
+        -3.0,
+        1.0,
+        2.0,
+        0.0
+      ],
+      "action_sha256": "7a8d544b6675efb49fc58fbfaf62174751d0e5855585622b98c83c721816bb27",
+      "action_trace_format": "sorted-seats-v1",
+      "seconds": 8.138515583996195
+    },
+    {
+      "seed": 2026111112,
+      "steps": 514,
+      "decisions": 517,
+      "scores": [
+        29300,
+        45500,
+        25400,
+        -200
+      ],
+      "ranks": [
+        2,
+        1,
+        3,
+        4
+      ],
+      "rewards": [
+        1.0,
+        2.0,
+        0.0,
+        -3.0
+      ],
+      "action_sha256": "9b8db7d99b8d3fd0a982e1e572efb6f6236de534e7c507a6f173c35bdacdfcde",
+      "action_trace_format": "sorted-seats-v1",
+      "seconds": 7.247293713997351
+    },
+    {
+      "seed": 2026111114,
+      "steps": 753,
+      "decisions": 761,
+      "scores": [
+        23700,
+        29300,
+        9300,
+        37700
+      ],
+      "ranks": [
+        3,
+        2,
+        4,
+        1
+      ],
+      "rewards": [
+        0.0,
+        1.0,
+        -3.0,
+        2.0
+      ],
+      "action_sha256": "c0a5a986220b7dbfcefa0ddda9adbf658b185d1080f2b7715d978c2db147de90",
+      "action_trace_format": "sorted-seats-v1",
+      "seconds": 9.020142202003626
+    },
+    {
+      "seed": 2026111116,
+      "steps": 608,
+      "decisions": 618,
+      "scores": [
+        28000,
+        16500,
+        23500,
+        32000
+      ],
+      "ranks": [
+        2,
+        4,
+        3,
+        1
+      ],
+      "rewards": [
+        1.0,
+        -3.0,
+        0.0,
+        2.0
+      ],
+      "action_sha256": "308b4056774fac5db71fa4c1f3ecda0b4bc5c338bcff2cfbc7adf95ea7d30ea7",
+      "action_trace_format": "sorted-seats-v1",
+      "seconds": 8.195432681008242
+    },
+    {
+      "seed": 2026111118,
+      "steps": 717,
+      "decisions": 723,
+      "scores": [
+        1100,
+        23600,
+        38400,
+        36900
+      ],
+      "ranks": [
+        4,
+        3,
+        1,
+        2
+      ],
+      "rewards": [
+        -3.0,
+        0.0,
+        2.0,
+        1.0
+      ],
+      "action_sha256": "9afc62b17a56b1349be3ab19f315727330e260ed040cce75df9077995c802698",
+      "action_trace_format": "sorted-seats-v1",
+      "seconds": 8.831783119996544
+    },
+    {
+      "seed": 2026111120,
+      "steps": 1100,
+      "decisions": 1115,
+      "scores": [
+        16600,
+        36000,
+        25000,
+        22400
+      ],
+      "ranks": [
+        4,
+        1,
+        2,
+        3
+      ],
+      "rewards": [
+        -3.0,
+        2.0,
+        1.0,
+        0.0
+      ],
+      "action_sha256": "e88321b6b6576debe64afc0dda4925f6b886998a74008b1e5296bfb46d732a08",
+      "action_trace_format": "sorted-seats-v1",
+      "seconds": 10.05696306200116
+    },
+    {
+      "seed": 2026111122,
+      "steps": 558,
+      "decisions": 564,
+      "scores": [
+        31000,
+        14700,
+        6800,
+        47500
+      ],
+      "ranks": [
+        2,
+        3,
+        4,
+        1
+      ],
+      "rewards": [
+        1.0,
+        0.0,
+        -3.0,
+        2.0
+      ],
+      "action_sha256": "01449e046b12e7b7d94306a44f1de488fe494ccf55c7aad6bbb2cf11e1e21836",
+      "action_trace_format": "sorted-seats-v1",
+      "seconds": 7.756740766984876
+    },
+    {
+      "seed": 2026111124,
+      "steps": 167,
+      "decisions": 172,
+      "scores": [
+        -600,
+        25000,
+        49600,
+        26000
+      ],
+      "ranks": [
+        4,
+        3,
+        1,
+        2
+      ],
+      "rewards": [
+        -3.0,
+        0.0,
+        2.0,
+        1.0
+      ],
+      "action_sha256": "de64057124c464c95b1e4097caeea5eeb90d42ce779c1f4e30b62d38a299f75a",
+      "action_trace_format": "sorted-seats-v1",
+      "seconds": 2.5125124620099086
+    },
+    {
+      "seed": 2026111126,
+      "steps": 601,
+      "decisions": 610,
+      "scores": [
+        26600,
+        20300,
+        12700,
+        40400
+      ],
+      "ranks": [
+        2,
+        3,
+        4,
+        1
+      ],
+      "rewards": [
+        1.0,
+        0.0,
+        -3.0,
+        2.0
+      ],
+      "action_sha256": "14d2637d7e33618b908498312af6fe11ae228212d81d60d0eba40edf71094ac6",
+      "action_trace_format": "sorted-seats-v1",
+      "seconds": 8.151630072999978
+    },
+    {
+      "seed": 2026111128,
+      "steps": 492,
+      "decisions": 501,
+      "scores": [
+        61000,
+        -7900,
+        31700,
+        15200
+      ],
+      "ranks": [
+        1,
+        4,
+        2,
+        3
+      ],
+      "rewards": [
+        2.0,
+        -3.0,
+        1.0,
+        0.0
+      ],
+      "action_sha256": "5b3f986d9bd6e26bd2e6b7aec610a098eff90904e1336eec5caa376f70aa0837",
+      "action_trace_format": "sorted-seats-v1",
+      "seconds": 6.950881837983616
+    },
+    {
+      "seed": 2026111130,
+      "steps": 834,
+      "decisions": 847,
+      "scores": [
+        35000,
+        -5500,
+        31400,
+        39100
+      ],
+      "ranks": [
+        2,
+        4,
+        3,
+        1
+      ],
+      "rewards": [
+        1.0,
+        -3.0,
+        0.0,
+        2.0
+      ],
+      "action_sha256": "68924e678deedef8132dd0d0d319eb5ce20ec936b40bdce5eb276249538c106f",
+      "action_trace_format": "sorted-seats-v1",
+      "seconds": 9.349978471989743
+    }
+  ]
+}
