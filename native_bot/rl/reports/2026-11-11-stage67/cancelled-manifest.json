@@ -1,0 +1,45 @@
+{
+  "config": {
+    "actor_lr": 1e-05,
+    "value_lr": 0.0001,
+    "warmup_lr": 0.001,
+    "clip": 0.05,
+    "value_clip": 0.2,
+    "epochs": 2,
+    "minibatch": 512,
+    "value_coef": 0.5,
+    "entropy_coef": 0.001,
+    "reference_kl_coef": 0.02,
+    "target_kl": 0.01,
+    "max_grad_norm": 0.5,
+    "gamma": 1.0,
+    "gae_lambda": 1.0
+  },
+  "settings": {
+    "weights": "/disk2/Akagi/experiments/runs/01-original-6m/akagi4p.safetensors",
+    "out": "/disk2/Akagi/experiments/riichienv-01/stage67/trial-1h",
+    "seconds": 3600.0,
+    "workers": 16,
+    "tables_per_worker": 4,
+    "games_per_rollout": 128,
+    "eval_seeds": 100,
+    "holdout_seeds": 200,
+    "eval_every": 600
+  },
+  "source_weights_sha256": "1ef2672b30ed1674124ee36c76c7b614926dd582c587fc90b9a19bff1c133bc4",
+  "train_seed_start": 310000000,
+  "tuning_seed_start": 410000000,
+  "holdout_seed_start": 510000000,
+  "opponents": "three frozen greedy 01",
+  "learner_sampling": "masked categorical, temperature 1",
+  "evaluation": "greedy learner, four seat rotations per seed",
+  "warmup_rollouts": 3,
+  "torch": "2.10.0+cu128",
+  "gpu": "NVIDIA GeForce RTX 4090",
+  "rank_rewards": [
+    2,
+    1,
+    0,
+    -3
+  ]
+}

@@ -1,0 +1,36 @@
+[
+  {
+    "iteration": 0,
+    "seed_start": 410000000,
+    "seeds": 100,
+    "games_count": 400,
+    "mean_rank": 2.5,
+    "mean_reward": 0.0,
+    "mean_score": 25000.0,
+    "fourth_rate": 0.25,
+    "rank_counts": [
+      100,
+      100,
+      100,
+      100
+    ],
+    "seconds": 41.234694464015774
+  },
+  {
+    "iteration": 45,
+    "seed_start": 410000000,
+    "seeds": 100,
+    "games_count": 400,
+    "mean_rank": 2.6125,
+    "mean_reward": -0.1375,
+    "mean_score": 22856.5,
+    "fourth_rate": 0.2625,
+    "rank_counts": [
+      75,
+      110,
+      110,
+      105
+    ],
+    "seconds": 20.417145494982833
+  }
+]

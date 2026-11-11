@@ -1,0 +1,45 @@
+{
+  "status": "cancelled_by_user",
+  "utc": "2026-11-11T06:45:31.524026+00:00",
+  "reason": "User requested stopping this trial and restarting a full hour only after they confirm GPU availability",
+  "last_completed_batch": {
+    "iteration": 73,
+    "elapsed_seconds": 966.4077391600003,
+    "games_total": 9344,
+    "learner_transitions_total": 1606445,
+    "environment_decisions_total": 6477729,
+    "rollout_seconds": 8.963108806987293,
+    "update_seconds": 3.1450902479991782,
+    "rollout_games_per_second": 14.280759361106512,
+    "training_reward_mean": -0.46875,
+    "training_rank_mean": 2.78125,
+    "seats": [
+      32,
+      32,
+      32,
+      32
+    ],
+    "min_rounds_seen": 3,
+    "policy_loss": -0.0018550311603272955,
+    "value_loss": 1.3584688022023155,
+    "entropy": 0.659039135490145,
+    "reference_kl": 0.07845768252653736,
+    "old_kl": 0.00019747564912652224,
+    "clip_fraction": 0.03354009804094121,
+    "minibatches": 84,
+    "early_stop": false,
+    "max_gradient_norm": 7.461074352264404,
+    "warmup": false,
+    "transitions": 21059,
+    "return_mean": -0.42974498867988586,
+    "return_std": 1.9571458101272583
+  },
+  "checkpoints": [
+    "checkpoint-00045.pt",
+    "initial.pt"
+  ],
+  "completed_one_hour": false,
+  "restart_authorized_now": false,
+  "resource_note": "0.2-second in-memory monitor was not flushed on SIGTERM; persisted per-process resource JSONL and batch logs remain available",
+  "termination": "Verified owner/command and terminated only the owned training process tree; SIGINT was inherited as ignored"
+}
