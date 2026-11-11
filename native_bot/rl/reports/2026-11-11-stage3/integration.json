@@ -1,0 +1,638 @@
+{
+  "feature_contract": "akagi-mjai-0.4.8-raw-v1",
+  "rank_rewards": [
+    2.0,
+    1.0,
+    0.0,
+    -3.0
+  ],
+  "source_weight_sha256": "1ef2672b30ed1674124ee36c76c7b614926dd582c587fc90b9a19bff1c133bc4",
+  "counts": {
+    "decisions": 16002,
+    "oracle_checks": 2119,
+    "legacy_legal_set_differences": 1
+  },
+  "decisions_by_seat": {
+    "0": 4007,
+    "1": 4003,
+    "2": 3964,
+    "3": 4028
+  },
+  "actions_seen": {
+    "ActionType.DISCARD": 13498,
+    "ActionType.PASS": 1003,
+    "ActionType.PON": 529,
+    "ActionType.KAKAN": 53,
+    "ActionType.RIICHI": 88,
+    "ActionType.TSUMO": 35,
+    "ActionType.CHI": 696,
+    "ActionType.RON": 61,
+    "ActionType.ANKAN": 28,
+    "ActionType.KYUSHU_KYUHAI": 3,
+    "ActionType.DAIMINKAN": 8
+  },
+  "events_seen_per_player": {
+    "start_game": 80,
+    "start_kyoku": 848,
+    "tsumo": 49622,
+    "dahai": 53840,
+    "pon": 2114,
+    "kakan": 212,
+    "dora": 356,
+    "reach": 352,
+    "reach_accepted": 347,
+    "hora": 336,
+    "end_kyoku": 768,
+    "chi": 2628,
+    "ryukyoku": 432,
+    "ankan": 112,
+    "daiminkan": 32
+  },
+  "games": [
+    {
+      "seed": 2026111100,
+      "mode": "greedy_01",
+      "steps": 588,
+      "scores": [
+        34600,
+        21300,
+        26700,
+        17400
+      ],
+      "ranks": [
+        1,
+        3,
+        2,
+        4
+      ],
+      "rewards": [
+        2.0,
+        0.0,
+        1.0,
+        -3.0
+      ],
+      "rounds_observed_by_seat": [
+        9,
+        9,
+        9,
+        9
+      ]
+    },
+    {
+      "seed": 2026111101,
+      "mode": "call_biased_legal",
+      "steps": 706,
+      "scores": [
+        17400,
+        20900,
+        25500,
+        36200
+      ],
+      "ranks": [
+        4,
+        3,
+        2,
+        1
+      ],
+      "rewards": [
+        -3.0,
+        0.0,
+        1.0,
+        2.0
+      ],
+      "rounds_observed_by_seat": [
+        9,
+        9,
+        9,
+        9
+      ]
+    },
+    {
+      "seed": 2026111102,
+      "mode": "greedy_01",
+      "steps": 529,
+      "scores": [
+        15100,
+        8500,
+        27700,
+        48700
+      ],
+      "ranks": [
+        3,
+        4,
+        2,
+        1
+      ],
+      "rewards": [
+        0.0,
+        -3.0,
+        1.0,
+        2.0
+      ],
+      "rounds_observed_by_seat": [
+        8,
+        8,
+        8,
+        8
+      ]
+    },
+    {
+      "seed": 2026111103,
+      "mode": "call_biased_legal",
+      "steps": 781,
+      "scores": [
+        17800,
+        23000,
+        36200,
+        23000
+      ],
+      "ranks": [
+        4,
+        2,
+        1,
+        3
+      ],
+      "rewards": [
+        -3.0,
+        1.0,
+        2.0,
+        0.0
+      ],
+      "rounds_observed_by_seat": [
+        9,
+        9,
+        9,
+        9
+      ]
+    },
+    {
+      "seed": 2026111104,
+      "mode": "greedy_01",
+      "steps": 598,
+      "scores": [
+        9700,
+        30200,
+        17100,
+        43000
+      ],
+      "ranks": [
+        4,
+        2,
+        3,
+        1
+      ],
+      "rewards": [
+        -3.0,
+        1.0,
+        0.0,
+        2.0
+      ],
+      "rounds_observed_by_seat": [
+        10,
+        10,
+        10,
+        10
+      ]
+    },
+    {
+      "seed": 2026111105,
+      "mode": "call_biased_legal",
+      "steps": 791,
+      "scores": [
+        33200,
+        28500,
+        16800,
+        21500
+      ],
+      "ranks": [
+        1,
+        2,
+        4,
+        3
+      ],
+      "rewards": [
+        2.0,
+        1.0,
+        -3.0,
+        0.0
+      ],
+      "rounds_observed_by_seat": [
+        10,
+        10,
+        10,
+        10
+      ]
+    },
+    {
+      "seed": 2026111106,
+      "mode": "greedy_01",
+      "steps": 574,
+      "scores": [
+        15300,
+        28700,
+        20600,
+        35400
+      ],
+      "ranks": [
+        4,
+        2,
+        3,
+        1
+      ],
+      "rewards": [
+        -3.0,
+        1.0,
+        0.0,
+        2.0
+      ],
+      "rounds_observed_by_seat": [
+        10,
+        10,
+        10,
+        10
+      ]
+    },
+    {
+      "seed": 2026111107,
+      "mode": "call_biased_legal",
+      "steps": 788,
+      "scores": [
+        22600,
+        22800,
+        22800,
+        31800
+      ],
+      "ranks": [
+        4,
+        2,
+        3,
+        1
+      ],
+      "rewards": [
+        -3.0,
+        1.0,
+        0.0,
+        2.0
+      ],
+      "rounds_observed_by_seat": [
+        10,
+        10,
+        10,
+        10
+      ]
+    },
+    {
+      "seed": 2026111108,
+      "mode": "greedy_01",
+      "steps": 946,
+      "scores": [
+        45500,
+        1900,
+        16400,
+        36200
+      ],
+      "ranks": [
+        1,
+        4,
+        3,
+        2
+      ],
+      "rewards": [
+        2.0,
+        -3.0,
+        0.0,
+        1.0
+      ],
+      "rounds_observed_by_seat": [
+        15,
+        15,
+        15,
+        15
+      ]
+    },
+    {
+      "seed": 2026111109,
+      "mode": "call_biased_legal",
+      "steps": 1309,
+      "scores": [
+        33500,
+        23700,
+        17700,
+        25100
+      ],
+      "ranks": [
+        1,
+        3,
+        4,
+        2
+      ],
+      "rewards": [
+        2.0,
+        0.0,
+        -3.0,
+        1.0
+      ],
+      "rounds_observed_by_seat": [
+        15,
+        15,
+        15,
+        15
+      ]
+    },
+    {
+      "seed": 2026111110,
+      "mode": "greedy_01",
+      "steps": 599,
+      "scores": [
+        -1900,
+        32200,
+        44600,
+        25100
+      ],
+      "ranks": [
+        4,
+        2,
+        1,
+        3
+      ],
+      "rewards": [
+        -3.0,
+        1.0,
+        2.0,
+        0.0
+      ],
+      "rounds_observed_by_seat": [
+        10,
+        10,
+        10,
+        10
+      ]
+    },
+    {
+      "seed": 2026111111,
+      "mode": "call_biased_legal",
+      "steps": 1081,
+      "scores": [
+        26100,
+        19600,
+        26700,
+        27600
+      ],
+      "ranks": [
+        3,
+        4,
+        2,
+        1
+      ],
+      "rewards": [
+        0.0,
+        -3.0,
+        1.0,
+        2.0
+      ],
+      "rounds_observed_by_seat": [
+        12,
+        12,
+        12,
+        12
+      ]
+    },
+    {
+      "seed": 2026111112,
+      "mode": "greedy_01",
+      "steps": 514,
+      "scores": [
+        29300,
+        45500,
+        25400,
+        -200
+      ],
+      "ranks": [
+        2,
+        1,
+        3,
+        4
+      ],
+      "rewards": [
+        1.0,
+        2.0,
+        0.0,
+        -3.0
+      ],
+      "rounds_observed_by_seat": [
+        8,
+        8,
+        8,
+        8
+      ]
+    },
+    {
+      "seed": 2026111113,
+      "mode": "call_biased_legal",
+      "steps": 802,
+      "scores": [
+        26000,
+        30000,
+        22000,
+        22000
+      ],
+      "ranks": [
+        2,
+        1,
+        3,
+        4
+      ],
+      "rewards": [
+        1.0,
+        2.0,
+        0.0,
+        -3.0
+      ],
+      "rounds_observed_by_seat": [
+        9,
+        9,
+        9,
+        9
+      ]
+    },
+    {
+      "seed": 2026111114,
+      "mode": "greedy_01",
+      "steps": 753,
+      "scores": [
+        23700,
+        29300,
+        9300,
+        37700
+      ],
+      "ranks": [
+        3,
+        2,
+        4,
+        1
+      ],
+      "rewards": [
+        0.0,
+        1.0,
+        -3.0,
+        2.0
+      ],
+      "rounds_observed_by_seat": [
+        11,
+        11,
+        11,
+        11
+      ]
+    },
+    {
+      "seed": 2026111115,
+      "mode": "call_biased_legal",
+      "steps": 1263,
+      "scores": [
+        25400,
+        25000,
+        29800,
+        19800
+      ],
+      "ranks": [
+        2,
+        3,
+        1,
+        4
+      ],
+      "rewards": [
+        1.0,
+        0.0,
+        2.0,
+        -3.0
+      ],
+      "rounds_observed_by_seat": [
+        14,
+        14,
+        14,
+        14
+      ]
+    },
+    {
+      "seed": 2026111116,
+      "mode": "greedy_01",
+      "steps": 608,
+      "scores": [
+        28000,
+        16500,
+        23500,
+        32000
+      ],
+      "ranks": [
+        2,
+        4,
+        3,
+        1
+      ],
+      "rewards": [
+        1.0,
+        -3.0,
+        0.0,
+        2.0
+      ],
+      "rounds_observed_by_seat": [
+        10,
+        10,
+        10,
+        10
+      ]
+    },
+    {
+      "seed": 2026111117,
+      "mode": "call_biased_legal",
+      "steps": 1265,
+      "scores": [
+        19000,
+        23000,
+        31000,
+        27000
+      ],
+      "ranks": [
+        4,
+        3,
+        1,
+        2
+      ],
+      "rewards": [
+        -3.0,
+        0.0,
+        2.0,
+        1.0
+      ],
+      "rounds_observed_by_seat": [
+        14,
+        14,
+        14,
+        14
+      ]
+    },
+    {
+      "seed": 2026111118,
+      "mode": "greedy_01",
+      "steps": 717,
+      "scores": [
+        1100,
+        23600,
+        38400,
+        36900
+      ],
+      "ranks": [
+        4,
+        3,
+        1,
+        2
+      ],
+      "rewards": [
+        -3.0,
+        0.0,
+        2.0,
+        1.0
+      ],
+      "rounds_observed_by_seat": [
+        11,
+        11,
+        11,
+        11
+      ]
+    },
+    {
+      "seed": 2026111119,
+      "mode": "call_biased_legal",
+      "steps": 691,
+      "scores": [
+        25000,
+        25000,
+        18600,
+        31400
+      ],
+      "ranks": [
+        2,
+        3,
+        4,
+        1
+      ],
+      "rewards": [
+        1.0,
+        0.0,
+        -3.0,
+        2.0
+      ],
+      "rounds_observed_by_seat": [
+        8,
+        8,
+        8,
+        8
+      ]
+    }
+  ],
+  "seconds": 37.724581407004735,
+  "oracle_feature_max_error": 0,
+  "oracle_legal_mask_disagreements": 0,
+  "oracle_physical_ranking_disagreements": 0,
+  "scope": "Bounded correctness integration, not throughput/strength evaluation or PPO"
+}

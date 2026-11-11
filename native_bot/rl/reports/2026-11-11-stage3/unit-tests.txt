@@ -1,0 +1,17 @@
+test_all_action_ids_and_red_five_representatives (test_adapter.AdapterTests.test_all_action_ids_and_red_five_representatives) ... ok
+test_ankan_dora_and_rinshan (test_adapter.AdapterTests.test_ankan_dora_and_rinshan) ... ok
+test_chankan_and_hidden_draw_noninterference (test_adapter.AdapterTests.test_chankan_and_hidden_draw_noninterference) ... ok
+test_late_kyushu_uses_live_legality_not_legacy_replay (test_adapter.AdapterTests.test_late_kyushu_uses_live_legality_not_legacy_replay) ... ok
+test_public_boundary_and_bad_events (test_adapter.AdapterTests.test_public_boundary_and_bad_events) ... ok
+test_quantization_matches_extractor_round_half_up (test_adapter.AdapterTests.test_quantization_matches_extractor_round_half_up) ... ok
+test_relative_planes_and_last_discard (test_adapter.AdapterTests.test_relative_planes_and_last_discard) ... ok
+test_retry_reset_and_wrong_seat (test_adapter.AdapterTests.test_retry_reset_and_wrong_seat) ... ok
+test_rewards_one_based_all_permutations (test_adapter.AdapterTests.test_rewards_one_based_all_permutations) ... ok
+test_riichi_two_step_and_deposit (test_adapter.AdapterTests.test_riichi_two_step_and_deposit) ... ok
+test_terminal_and_next_hand_reset (test_adapter.AdapterTests.test_terminal_and_next_hand_reset) ... ok
+test_ties_and_illegal_actions (test_adapter.AdapterTests.test_ties_and_illegal_actions) ... ok
+
+----------------------------------------------------------------------
+Ran 12 tests in 0.013s
+
+OK
