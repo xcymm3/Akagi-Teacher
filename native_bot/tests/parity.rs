@@ -31,8 +31,17 @@ fn check(model_file: &str, parity_file: &str, num_players: u8) {
 
     let json: serde_json::Value =
         serde_json::from_slice(&fs::read(dir.join(parity_file)).expect("parity json")).unwrap();
-    let input = floats(&json["input"]);
-    let reference = floats(&json["logits"]);
+    check_case(&model, &json, model_file);
+    if let Some(cases) = json["cases"].as_array() {
+        for case in cases {
+            check_case(&model, case, model_file);
+        }
+    }
+}
+
+fn check_case(model: &Model, case: &serde_json::Value, model_file: &str) {
+    let input = floats(&case["input"]);
+    let reference = floats(&case["logits"]);
 
     let got = model.forward_logits(&input).expect("forward");
     assert_eq!(got.len(), reference.len(), "logit length mismatch");
@@ -42,13 +51,27 @@ fn check(model_file: &str, parity_file: &str, num_players: u8) {
         .zip(&reference)
         .map(|(a, b)| (a - b).abs())
         .fold(0.0f32, f32::max);
+    let mut legal_logits = got.clone();
+    if let Some(mask) = case["mask"].as_array() {
+        assert_eq!(mask.len(), got.len());
+        for (logit, allowed) in legal_logits.iter_mut().zip(mask) {
+            if allowed.as_u64() == Some(0) {
+                *logit = f32::NEG_INFINITY;
+            }
+        }
+    }
     assert_eq!(
-        argmax(&got),
-        json["argmax"].as_u64().unwrap() as usize,
+        argmax(&legal_logits),
+        case["argmax"].as_u64().unwrap() as usize,
         "candle argmax differs from PyTorch"
     );
     assert!(
-        max_diff < 2e-3,
+        // Deep folded networks can produce very large logits for the synthetic
+        // stress input. Use mixed FP32 tolerances, while retaining a strict
+        // absolute tolerance for ordinary replay observations.
+        got.iter()
+            .zip(&reference)
+            .all(|(a, b)| (a - b).abs() < 2e-3 + 1e-5 * b.abs()),
         "candle vs PyTorch logit diff too large: {max_diff}"
     );
     eprintln!("{model_file}: candle/PyTorch max|diff| = {max_diff:.2e}, argmax matches");

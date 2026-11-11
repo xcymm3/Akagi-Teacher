@@ -84,10 +84,22 @@ candidate, preferring the plain copy so a "discard the five" prediction never
 throws away a dora. Labels are unaffected — `Action::encode` already mapped both
 to the same id — so this is purely how a logit is turned back into a tile.
 
-**To change the model size/shape**: keep `CONV`/`BLOCKS`/`FC` in `src/model.rs`
-in lock-step with the same constants in `train/train.py`. The safetensors key
-names (`conv_in`, `res.{i}.conv{1,2}`, `fc`, `head`) are the contract between
-the two.
+**Model size/shape**: `src/model.rs` reads the convolution width, residual depth,
+and fully connected width from the weight tensor shapes. Four-player and
+three-player models may therefore have different sizes. Input geometry and
+action counts are still checked against the shared encoder. The safetensors
+key names (`conv_in`, `res.{i}.conv{1,2}`, `fc`, `head`) are the contract between
+training and inference; use the matching PyTorch reference in `weights/parity_*.json`
+whenever replacing weights.
+
+The bundled four-player checkpoint is experiment `06-6m-30m`, selected at epoch
+9 by 2025 validation accuracy (78.7958%). It uses 288 convolution channels,
+7 residual blocks, a 256-unit fully connected layer, and 30 million training
+decisions. Its 2026 held-out action accuracy is 78.6764%; this is not a measured
+match win rate. Weight SHA-256:
+`d789d430f4a905284990d745e6e4549411e9290c52dfb1c83b088697a684dfb6`.
+Three-player weights are unchanged. Weights are embedded at build time, so
+rebuild the application after replacing them.
 
 ## Building
 
