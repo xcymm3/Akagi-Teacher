@@ -1,0 +1,545 @@
+{
+  "completed": true,
+  "training_wall_seconds": 62.52384971297579,
+  "total_job_seconds": 81.85205739599769,
+  "iterations": 9,
+  "games": 576,
+  "learner_transitions": 100517,
+  "environment_decisions": 405935,
+  "rollout_seconds": 48.662536628049565,
+  "update_seconds": 11.061427990003722,
+  "games_per_training_wall_second": 9.212484558199888,
+  "learner_transitions_per_training_wall_second": 1607.6585248898928,
+  "best_checkpoint": "checkpoint-00005.pt",
+  "best_tuning_reward": 0.0625,
+  "tuning_evaluations": [
+    {
+      "iteration": 0,
+      "seed_start": 410000000,
+      "seeds": 4,
+      "games_count": 16,
+      "mean_rank": 2.5,
+      "mean_reward": 0.0,
+      "mean_score": 25000.0,
+      "fourth_rate": 0.25,
+      "rank_counts": [
+        4,
+        4,
+        4,
+        4
+      ],
+      "seconds": 3.199338688980788
+    },
+    {
+      "iteration": 5,
+      "seed_start": 410000000,
+      "seeds": 4,
+      "games_count": 16,
+      "mean_rank": 2.5625,
+      "mean_reward": 0.0625,
+      "mean_score": 22743.75,
+      "fourth_rate": 0.1875,
+      "rank_counts": [
+        3,
+        4,
+        6,
+        3
+      ],
+      "seconds": 2.6753096700122114
+    },
+    {
+      "iteration": 9,
+      "final": true,
+      "seed_start": 410000000,
+      "seeds": 4,
+      "games_count": 16,
+      "mean_rank": 2.5625,
+      "mean_reward": -0.1875,
+      "mean_score": 24431.25,
+      "fourth_rate": 0.3125,
+      "rank_counts": [
+        4,
+        4,
+        3,
+        5
+      ],
+      "seconds": 2.8624725289992057
+    }
+  ],
+  "holdout_baseline": {
+    "seed_start": 510000000,
+    "seeds": 4,
+    "games_count": 16,
+    "mean_rank": 2.5,
+    "mean_reward": 0.0,
+    "mean_score": 25000.0,
+    "fourth_rate": 0.25,
+    "rank_counts": [
+      4,
+      4,
+      4,
+      4
+    ],
+    "seconds": 3.52956903501763
+  },
+  "holdout_final": {
+    "seed_start": 510000000,
+    "seeds": 4,
+    "games_count": 16,
+    "mean_rank": 2.8125,
+    "mean_reward": -0.4375,
+    "mean_score": 25025.0,
+    "fourth_rate": 0.3125,
+    "rank_counts": [
+      3,
+      2,
+      6,
+      5
+    ],
+    "seconds": 4.024584402999608
+  },
+  "holdout_best": {
+    "seed_start": 510000000,
+    "seeds": 4,
+    "games_count": 16,
+    "mean_rank": 2.5625,
+    "mean_reward": -0.1875,
+    "mean_score": 22606.25,
+    "fourth_rate": 0.3125,
+    "rank_counts": [
+      4,
+      4,
+      3,
+      5
+    ],
+    "seconds": 3.860040708008455
+  },
+  "final_paired": {
+    "bootstrap_unit": "seed cluster containing all four seat rotations",
+    "bootstrap_replicates": 5000,
+    "mean_deltas_reward_rank_fourth": [
+      -0.4375,
+      0.3125,
+      0.0625
+    ],
+    "paired_95pct_ci_reward_rank_fourth": [
+      [
+        -1.1875,
+        0.125
+      ],
+      [
+        -0.125,
+        0.8125
+      ],
+      [
+        0.0,
+        0.1875
+      ]
+    ]
+  },
+  "best_paired": {
+    "bootstrap_unit": "seed cluster containing all four seat rotations",
+    "bootstrap_replicates": 5000,
+    "mean_deltas_reward_rank_fourth": [
+      -0.1875,
+      0.0625,
+      0.0625
+    ],
+    "paired_95pct_ci_reward_rank_fourth": [
+      [
+        -0.875,
+        0.375
+      ],
+      [
+        -0.375,
+        0.5
+      ],
+      [
+        0.0,
+        0.1875
+      ]
+    ]
+  },
+  "resources": {
+    "rollout": {
+      "cpu": {
+        "samples": 195,
+        "broker_cpu_pct_one_core": {
+          "mean": 113.55487179487179,
+          "max": 120.7,
+          "p95": 118.3
+        },
+        "host_cpu_pct": {
+          "mean": 8.660512820512821,
+          "max": 12.7,
+          "p95": 12.129999999999997
+        },
+        "tree_rss_sum_bytes": {
+          "mean": 10453783179.158974,
+          "max": 10584047616,
+          "p95": 10564962713.6
+        },
+        "host_memory_used_bytes": {
+          "mean": 13289118714.748718,
+          "max": 13499252736,
+          "p95": 13430217113.6
+        },
+        "host_memory_pct": {
+          "mean": 9.860512820512819,
+          "max": 10.0,
+          "p95": 10.0
+        },
+        "host_memory_available_bytes": {
+          "mean": 121480856581.25128,
+          "max": 121986117632,
+          "p95": 121833560883.2
+        }
+      },
+      "gpu": {
+        "samples": 244,
+        "gpu_util_pct": {
+          "mean": 15.975409836065573,
+          "max": 88.0,
+          "p95": 14.0
+        },
+        "memory_controller_util_pct": {
+          "mean": 3.987704918032787,
+          "max": 96.0,
+          "p95": 0.0
+        },
+        "used_mib": {
+          "mean": 1753.7622950819673,
+          "max": 2707.0,
+          "p95": 2707.0
+        },
+        "total_mib": {
+          "mean": 49140.0,
+          "max": 49140.0,
+          "p95": 49140.0
+        },
+        "power_w": {
+          "mean": 88.2154918032787,
+          "max": 303.45,
+          "p95": 244.24699999999984
+        }
+      }
+    },
+    "warmup": {
+      "cpu": {
+        "samples": 3,
+        "broker_cpu_pct_one_core": {
+          "mean": 105.2,
+          "max": 117.1,
+          "p95": 116.28
+        },
+        "host_cpu_pct": {
+          "mean": 7.766666666666667,
+          "max": 8.4,
+          "p95": 8.32
+        },
+        "tree_rss_sum_bytes": {
+          "mean": 10347492693.333334,
+          "max": 10489782272,
+          "p95": 10481420697.6
+        },
+        "host_memory_used_bytes": {
+          "mean": 13263491072.0,
+          "max": 13434818560,
+          "p95": 13422761574.4
+        },
+        "host_memory_pct": {
+          "mean": 9.866666666666667,
+          "max": 10.0,
+          "p95": 9.99
+        },
+        "host_memory_available_bytes": {
+          "mean": 121506484224.0,
+          "max": 121728569344,
+          "p95": 121701285068.8
+        }
+      },
+      "gpu": {
+        "samples": 4,
+        "gpu_util_pct": {
+          "mean": 12.25,
+          "max": 14.0,
+          "p95": 13.7
+        },
+        "memory_controller_util_pct": {
+          "mean": 0.0,
+          "max": 0.0,
+          "p95": 0.0
+        },
+        "used_mib": {
+          "mean": 547.5,
+          "max": 555.0,
+          "p95": 555.0
+        },
+        "total_mib": {
+          "mean": 49140.0,
+          "max": 49140.0,
+          "p95": 49140.0
+        },
+        "power_w": {
+          "mean": 67.835,
+          "max": 68.77,
+          "p95": 68.719
+        }
+      }
+    },
+    "update": {
+      "cpu": {
+        "samples": 44,
+        "broker_cpu_pct_one_core": {
+          "mean": 111.60681818181818,
+          "max": 117.7,
+          "p95": 115.885
+        },
+        "host_cpu_pct": {
+          "mean": 3.8340909090909094,
+          "max": 7.9,
+          "p95": 7.485
+        },
+        "tree_rss_sum_bytes": {
+          "mean": 10617618338.90909,
+          "max": 10627862528,
+          "p95": 10627862528.0
+        },
+        "host_memory_used_bytes": {
+          "mean": 13322009693.09091,
+          "max": 13535293440,
+          "p95": 13522979430.4
+        },
+        "host_memory_pct": {
+          "mean": 9.893181818181818,
+          "max": 10.0,
+          "p95": 10.0
+        },
+        "host_memory_available_bytes": {
+          "mean": 121447965602.90909,
+          "max": 121811603456,
+          "p95": 121754932838.4
+        }
+      },
+      "gpu": {
+        "samples": 52,
+        "gpu_util_pct": {
+          "mean": 60.5,
+          "max": 88.0,
+          "p95": 87.0
+        },
+        "memory_controller_util_pct": {
+          "mean": 61.0,
+          "max": 96.0,
+          "p95": 95.0
+        },
+        "used_mib": {
+          "mean": 2700.1923076923076,
+          "max": 2707.0,
+          "p95": 2707.0
+        },
+        "total_mib": {
+          "mean": 49140.0,
+          "max": 49140.0,
+          "p95": 49140.0
+        },
+        "power_w": {
+          "mean": 183.1459615384615,
+          "max": 309.09,
+          "p95": 303.01
+        }
+      }
+    },
+    "periodic_eval": {
+      "cpu": {
+        "samples": 10,
+        "broker_cpu_pct_one_core": {
+          "mean": 114.14000000000001,
+          "max": 118.5,
+          "p95": 118.365
+        },
+        "host_cpu_pct": {
+          "mean": 9.02,
+          "max": 9.8,
+          "p95": 9.71
+        },
+        "tree_rss_sum_bytes": {
+          "mean": 10556575744.0,
+          "max": 10556575744,
+          "p95": 10556575744.0
+        },
+        "host_memory_used_bytes": {
+          "mean": 13358435942.4,
+          "max": 13369376768,
+          "p95": 13366796288.0
+        },
+        "host_memory_pct": {
+          "mean": 9.900000000000002,
+          "max": 9.9,
+          "p95": 9.9
+        },
+        "host_memory_available_bytes": {
+          "mean": 121411539353.6,
+          "max": 121427922944,
+          "p95": 121425915699.2
+        }
+      },
+      "gpu": {
+        "samples": 13,
+        "gpu_util_pct": {
+          "mean": 28.923076923076923,
+          "max": 87.0,
+          "p95": 87.0
+        },
+        "memory_controller_util_pct": {
+          "mean": 21.923076923076923,
+          "max": 95.0,
+          "p95": 95.0
+        },
+        "used_mib": {
+          "mean": 2697.0,
+          "max": 2697.0,
+          "p95": 2697.0
+        },
+        "total_mib": {
+          "mean": 49140.0,
+          "max": 49140.0,
+          "p95": 49140.0
+        },
+        "power_w": {
+          "mean": 147.71307692307693,
+          "max": 285.35,
+          "p95": 285.35
+        }
+      }
+    },
+    "baseline_eval": {
+      "cpu": {
+        "samples": 12,
+        "broker_cpu_pct_one_core": {
+          "mean": 111.18333333333332,
+          "max": 120.3,
+          "p95": 119.75
+        },
+        "host_cpu_pct": {
+          "mean": 8.699999999999998,
+          "max": 9.6,
+          "p95": 9.6
+        },
+        "tree_rss_sum_bytes": {
+          "mean": 9788445354.666666,
+          "max": 9830449152,
+          "p95": 9830262169.6
+        },
+        "host_memory_used_bytes": {
+          "mean": 12728655189.333334,
+          "max": 12799447040,
+          "p95": 12796331417.6
+        },
+        "host_memory_pct": {
+          "mean": 9.458333333333334,
+          "max": 9.5,
+          "p95": 9.5
+        },
+        "host_memory_available_bytes": {
+          "mean": 122041320106.66667,
+          "max": 122385281024,
+          "p95": 122241757388.8
+        }
+      },
+      "gpu": {
+        "samples": 16,
+        "gpu_util_pct": {
+          "mean": 8.8125,
+          "max": 13.0,
+          "p95": 13.0
+        },
+        "memory_controller_util_pct": {
+          "mean": 0.0,
+          "max": 0.0,
+          "p95": 0.0
+        },
+        "used_mib": {
+          "mean": 500.375,
+          "max": 505.0,
+          "p95": 505.0
+        },
+        "total_mib": {
+          "mean": 49140.0,
+          "max": 49140.0,
+          "p95": 49140.0
+        },
+        "power_w": {
+          "mean": 66.66749999999999,
+          "max": 68.81,
+          "p95": 68.81
+        }
+      }
+    },
+    "final_eval": {
+      "cpu": {
+        "samples": 57,
+        "broker_cpu_pct_one_core": {
+          "mean": 112.43684210526317,
+          "max": 119.5,
+          "p95": 118.38
+        },
+        "host_cpu_pct": {
+          "mean": 3.959649122807017,
+          "max": 5.9,
+          "p95": 5.059999999999999
+        },
+        "tree_rss_sum_bytes": {
+          "mean": 10563223767.578947,
+          "max": 10565410816,
+          "p95": 10565189632.0
+        },
+        "host_memory_used_bytes": {
+          "mean": 13173735352.14035,
+          "max": 13343576064,
+          "p95": 13336109056.0
+        },
+        "host_memory_pct": {
+          "mean": 9.782456140350877,
+          "max": 9.9,
+          "p95": 9.9
+        },
+        "host_memory_available_bytes": {
+          "mean": 121596239943.85965,
+          "max": 121787817984,
+          "p95": 121781437235.2
+        }
+      },
+      "gpu": {
+        "samples": 71,
+        "gpu_util_pct": {
+          "mean": 11.394366197183098,
+          "max": 14.0,
+          "p95": 13.0
+        },
+        "memory_controller_util_pct": {
+          "mean": 0.0,
+          "max": 0.0,
+          "p95": 0.0
+        },
+        "used_mib": {
+          "mean": 2707.0,
+          "max": 2707.0,
+          "p95": 2707.0
+        },
+        "total_mib": {
+          "mean": 49140.0,
+          "max": 49140.0,
+          "p95": 49140.0
+        },
+        "power_w": {
+          "mean": 84.06718309859154,
+          "max": 304.3,
+          "p95": 205.47
+        }
+      }
+    }
+  },
+  "original_weights_unchanged": true,
+  "frozen_opponent_unchanged": true
+}

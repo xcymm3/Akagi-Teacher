@@ -1,0 +1,56 @@
+{
+  "passed": true,
+  "seconds": 18.158069486002205,
+  "workers": 16,
+  "tables": 64,
+  "complete_games": 128,
+  "first_rollout_transitions": 11247,
+  "second_rollout_transitions": 10993,
+  "rank_reward_values_observed": [
+    -3.0,
+    0.0,
+    1.0,
+    2.0
+  ],
+  "rounds_seen_min_max": [
+    2,
+    17
+  ],
+  "old_log_probability_max_error": 9.5367431640625e-07,
+  "warmup": {
+    "policy_loss": 8.861911059780554e-05,
+    "value_loss": 2.048536322333596,
+    "entropy": 0.6602634665640917,
+    "reference_kl": 0.0,
+    "old_kl": 7.241477367242959e-11,
+    "clip_fraction": 0.0,
+    "minibatches": 44,
+    "early_stop": false,
+    "max_gradient_norm": 20.282907485961914,
+    "warmup": true,
+    "transitions": 11247,
+    "return_mean": -0.42678046226501465,
+    "return_std": 1.9350955486297607
+  },
+  "ppo": {
+    "policy_loss": -0.0013410910032689571,
+    "value_loss": 1.7448019683361053,
+    "entropy": 0.6553997167132117,
+    "reference_kl": 0.00011250556198919267,
+    "old_kl": 0.00011289208690744668,
+    "clip_fraction": 0.01928683315319094,
+    "minibatches": 44,
+    "early_stop": false,
+    "max_gradient_norm": 2.9169557094573975,
+    "warmup": false,
+    "transitions": 10993,
+    "return_mean": -0.42399707436561584,
+    "return_std": 1.8728028535842896
+  },
+  "checkpoint_next_update_max_parameter_difference": 0.0,
+  "export_forward_max_difference": 0.0,
+  "frozen_reference_unchanged": true,
+  "actor_unchanged_during_warmup": true,
+  "actor_changed_during_ppo": true,
+  "terminal_rewards_propagated_entire_hanchan": true
+}
