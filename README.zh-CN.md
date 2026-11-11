@@ -4,7 +4,7 @@
 
 [下载 Windows x64 完整便携包](https://github.com/xcymm3/Akagi-Teacher/releases/latest) · [中文使用说明](docs/teacher-windows-usage.zh-CN.md)
 
-教师版为内置本地模型的前三个候选增加牌理说明和攻守取舍解读，不修改模型权重或候选排序。下方保留上游 Akagi 的完整说明。
+教师版为内置本地模型的前三个候选增加牌理说明和攻守取舍解读。v3.7.2.6 的四麻内置模型采用天凤牌谱训练的 `06-6m-30m` 权重（约 605 万参数），三麻沿用原模型；文字解读仍不改变模型输出的候选排序。下方保留上游 Akagi 的完整说明。
 
 <br/>
 
