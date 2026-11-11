@@ -1,0 +1,190 @@
+{
+  "riichienv": "0.4.11",
+  "mode": "4p-red-half",
+  "rule": "default_tenhou",
+  "policy": "RandomAgent (not Akagi)",
+  "games": [
+    {
+      "seed": 20261111,
+      "steps": 1042,
+      "decisions": 1049,
+      "scores": [
+        25000,
+        25000,
+        25000,
+        25000
+      ],
+      "ranks": [
+        1,
+        2,
+        3,
+        4
+      ],
+      "done": true
+    },
+    {
+      "seed": 20261112,
+      "steps": 1036,
+      "decisions": 1036,
+      "scores": [
+        24000,
+        24000,
+        28000,
+        24000
+      ],
+      "ranks": [
+        2,
+        3,
+        1,
+        4
+      ],
+      "done": true
+    },
+    {
+      "seed": 20261113,
+      "steps": 1065,
+      "decisions": 1067,
+      "scores": [
+        25000,
+        25000,
+        25000,
+        25000
+      ],
+      "ranks": [
+        1,
+        2,
+        3,
+        4
+      ],
+      "done": true
+    },
+    {
+      "seed": 20261114,
+      "steps": 813,
+      "decisions": 816,
+      "scores": [
+        25000,
+        21000,
+        33000,
+        21000
+      ],
+      "ranks": [
+        2,
+        3,
+        1,
+        4
+      ],
+      "done": true
+    },
+    {
+      "seed": 20261115,
+      "steps": 1057,
+      "decisions": 1059,
+      "scores": [
+        28000,
+        24000,
+        24000,
+        24000
+      ],
+      "ranks": [
+        1,
+        2,
+        3,
+        4
+      ],
+      "done": true
+    },
+    {
+      "seed": 20261116,
+      "steps": 1043,
+      "decisions": 1044,
+      "scores": [
+        28000,
+        24000,
+        24000,
+        24000
+      ],
+      "ranks": [
+        1,
+        2,
+        3,
+        4
+      ],
+      "done": true
+    },
+    {
+      "seed": 20261117,
+      "steps": 1150,
+      "decisions": 1152,
+      "scores": [
+        24000,
+        28000,
+        24000,
+        24000
+      ],
+      "ranks": [
+        2,
+        1,
+        3,
+        4
+      ],
+      "done": true
+    },
+    {
+      "seed": 20261118,
+      "steps": 1051,
+      "decisions": 1054,
+      "scores": [
+        25000,
+        25000,
+        25000,
+        25000
+      ],
+      "ranks": [
+        1,
+        2,
+        3,
+        4
+      ],
+      "done": true
+    },
+    {
+      "seed": 20261119,
+      "steps": 1052,
+      "decisions": 1057,
+      "scores": [
+        25000,
+        25000,
+        25000,
+        25000
+      ],
+      "ranks": [
+        1,
+        2,
+        3,
+        4
+      ],
+      "done": true
+    },
+    {
+      "seed": 20261120,
+      "steps": 1046,
+      "decisions": 1051,
+      "scores": [
+        25000,
+        25000,
+        25000,
+        25000
+      ],
+      "ranks": [
+        1,
+        2,
+        3,
+        4
+      ],
+      "done": true
+    }
+  ],
+  "deterministic_replay": true,
+  "seconds": 0.32420751900644973
+}

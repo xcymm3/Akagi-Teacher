@@ -1,0 +1,29 @@
+{
+  "python": "3.12.3 (main, Aug 31 2026, 10:18:26) [GCC 13.3.0]",
+  "executable": "/disk2/Akagi/env/riichienv-01/bin/python",
+  "prefix": "/disk2/Akagi/env/riichienv-01",
+  "base_prefix": "/usr",
+  "riichienv_module": "/disk2/Akagi/env/riichienv-01/lib/python3.12/site-packages/riichienv/__init__.py",
+  "torch_module": "/disk2/Akagi/env/riichienv-01/lib/python3.12/site-packages/torch/__init__.py",
+  "torch": "2.10.0+cu128",
+  "cuda": "12.8",
+  "gpu_uuid": "GPU-b564ea51-9c60-4f6b-1936-0178ed6e2c58",
+  "visible_cuda_devices": 1,
+  "gpu": "NVIDIA GeForce RTX 4090",
+  "rust": "rustc 1.99.1 (58cf8f9c3 2026-10-13)",
+  "maturin": "maturin 1.16.0",
+  "source_commits": {
+    "source": "bea9b569277701cd311c428cbf091f385c45bad2",
+    "RiichiEnv": "0ee1236a283b15508f3ac28407027f340b81e1de"
+  },
+  "source_status": {
+    "source": "",
+    "RiichiEnv": ""
+  },
+  "original_environment_unchanged": true,
+  "wheels": {
+    "riichienv-0.4.11-cp312-cp312-manylinux_2_34_x86_64.whl": "4d35a3fa96f67c6b9bac90e2643500c931cfead8a9782950009fc61719ebbfc1"
+  },
+  "pip_download_index": "https://pypi.tuna.tsinghua.edu.cn/simple",
+  "scope": "Stage 1 and 2 only; no Akagi observation/action adapter or PPO training"
+}
