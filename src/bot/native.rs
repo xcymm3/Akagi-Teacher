@@ -602,7 +602,7 @@ impl BotRunner for NativeBot {
         };
         // Capture the state owned by THIS decision, not the independently
         // advancing tracker/cache. Expensive coaching is requested by the UI
-        // later on a blocking worker; autoplay never waits for it.
+        // later on a blocking worker; autoplay may reuse it for arbitration.
         if let Some(show) = meta.as_mut().and_then(|m| m.get_mut("show")) {
             if show.get("title").and_then(Value::as_str) == Some(SHOW_TITLE_LOCAL) {
                 let snapshot = self.engine.inspect_state(

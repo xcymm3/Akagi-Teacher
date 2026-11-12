@@ -1,14 +1,14 @@
-//! Optional, read-only evidence for the native bot's first three candidates.
+//! Decision-bound evidence for the native bot's first three candidates.
 //! Receives an immutable decision snapshot; never consults the live tracker.
 //! Baseline metrics are retained for unsupported shapes and helper failures.
-//! The independent Go engine supplies deeper evaluation without changing actions.
+//! The Go engine supplies evaluation; autoplay may arbitrate using its result.
 
 use super::{shanten, snapshot_adapter::to_player_info, tile::Tile34, waits};
 use crate::game_state::snapshot::GameStateSnapshot;
 use crate::schema::MjaiEvent;
 use serde::{Deserialize, Serialize};
 
-#[derive(Debug, Clone, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct CoachRequest {
     pub snapshot: GameStateSnapshot,
     pub actions: Vec<MjaiEvent>,
@@ -368,9 +368,35 @@ mod tests {
     }
 }
 
-/// Full analysis runs only when requested by the UI. One child per request,
-/// bounded concurrency and wall time; dropping a timed-out child kills it.
+/// Coalesce the dashboard, overlay and autoplay's identical decision requests.
 pub async fn explain(request: CoachRequest) -> Result<CoachFacts, String> {
+    use std::{collections::VecDeque, sync::Arc};
+    type Entry = (
+        String,
+        Arc<tokio::sync::OnceCell<Result<CoachFacts, String>>>,
+    );
+    static CACHE: tokio::sync::Mutex<VecDeque<Entry>> =
+        tokio::sync::Mutex::const_new(VecDeque::new());
+    let key = serde_json::to_string(&request).map_err(|e| e.to_string())?;
+    let cell = {
+        let mut cache = CACHE.lock().await;
+        if let Some((_, cell)) = cache.iter().find(|(k, _)| k == &key) {
+            cell.clone()
+        } else {
+            let cell = Arc::new(tokio::sync::OnceCell::new());
+            cache.push_back((key, cell.clone()));
+            if cache.len() > 24 {
+                cache.pop_front();
+            }
+            cell
+        }
+    };
+    cell.get_or_init(|| explain_uncached(request)).await.clone()
+}
+
+/// One child per decision, bounded concurrency and wall time. Cancellation
+/// kills the child; another waiting caller can retry the uninitialized cell.
+async fn explain_uncached(request: CoachRequest) -> Result<CoachFacts, String> {
     static SLOTS: tokio::sync::Semaphore = tokio::sync::Semaphore::const_new(2);
     let baseline_request = request.clone();
     let mut facts =

@@ -152,7 +152,7 @@ impl AutoplayManager {
         }
     }
 
-    async fn handle_bot_response(&mut self, resp: BotResponse) {
+    async fn handle_bot_response(&mut self, mut resp: BotResponse) {
         // Re-read config every iteration so `cfg.autoplay.enabled` can be
         // toggled at runtime via the Settings UI without restarting.
         let cfg_guard = self.cfg.read().await;
@@ -177,11 +177,6 @@ impl AutoplayManager {
         // model — neither can alter the chosen action. `opened_at` is kept
         // as the window's identity for the post-sleep staleness check.
         let planned_budget = self.ctx.time_budget.read().ok().and_then(|g| *g);
-        let budget = planned_budget.map(|b| crate::autoplay::delay::BudgetSnapshot {
-            fixed_ms: b.fixed_ms,
-            add_ms: b.add_ms,
-            elapsed_ms: b.elapsed_ms(),
-        });
         let probs = crate::autoplay::delay::probs::normalize_meta(resp.meta.as_ref());
 
         // The delay script lives at a fixed path next to the config file.
@@ -224,6 +219,64 @@ impl AutoplayManager {
             (our_seat, legal_actions, snapshot, num_players)
         };
 
+        if let Some(request) = super::teacher::request(&resp) {
+            let bound = &request.snapshot;
+            if bound.kyoku != snapshot.kyoku
+                || bound.bakaze != snapshot.bakaze
+                || bound.honba != snapshot.honba
+                || bound.turn_count != snapshot.turn_count
+                || bound.phase != snapshot.phase
+                || bound.current_player != snapshot.current_player
+                || bound.players.get(our_seat as usize).map(|p| &p.tehai)
+                    != snapshot.players.get(our_seat as usize).map(|p| &p.tehai)
+            {
+                warn!("autoplay: stale teacher decision snapshot; skipping action");
+                return;
+            }
+            // Reserve time for the actual input. Analysis never consumes an
+            // unbounded portion of the turn, even when the UI requests it too.
+            let analysis_ms = planned_budget
+                .map(|b| {
+                    b.fixed_ms
+                        .saturating_add(b.add_ms)
+                        .saturating_sub(b.elapsed_ms())
+                        .saturating_sub(1200)
+                        .min(2000)
+                })
+                .unwrap_or(2000);
+            if analysis_ms > 0 {
+                match tokio::time::timeout(
+                    Duration::from_millis(u64::from(analysis_ms)),
+                    crate::analysis::coach::explain(request),
+                )
+                .await
+                {
+                    Ok(Ok(facts)) => {
+                        if let Some(action) = super::teacher::preferred(&facts) {
+                            info!("autoplay: teacher arbitration {:?} -> {:?} (model probability <= 60%)", resp.action, action);
+                            resp.action = action;
+                        }
+                    }
+                    _ => warn!("autoplay: teacher unavailable; retaining model action"),
+                }
+            }
+            if !self.window_still_open(planned_budget) || self.tenhou_window_moved(planned_window) {
+                warn!("autoplay: decision window closed during teacher analysis; skipping action");
+                return;
+            }
+            if self.tracker.lock().await.snapshot().as_ref() != Some(&snapshot) {
+                warn!("autoplay: game state changed during teacher analysis; skipping action");
+                return;
+            }
+        }
+        if !self.cfg.read().await.autoplay.enabled {
+            return;
+        }
+        let budget = planned_budget.map(|b| crate::autoplay::delay::BudgetSnapshot {
+            fixed_ms: b.fixed_ms,
+            add_ms: b.add_ms,
+            elapsed_ms: b.elapsed_ms(),
+        });
         let action_ctx = ActionContext {
             action: &resp.action,
             snapshot: &snapshot,
@@ -333,8 +386,10 @@ impl AutoplayManager {
             let window_open_at_plan = inject.window_is_open();
             let window_at_plan = inject.window_opened_at();
             let plan_created = Instant::now();
+            let live_config = self.cfg.clone();
             tauri::async_runtime::spawn(async move {
                 execute_riichi_frame(
+                    live_config,
                     sleep_ms as u64,
                     frame,
                     action,
@@ -352,6 +407,9 @@ impl AutoplayManager {
 
         let mut window_checked = false;
         for step in &plan.steps {
+            if !self.cfg.read().await.autoplay.enabled {
+                return;
+            }
             match step {
                 Step::Sleep { duration_ms } => {
                     tokio::time::sleep(Duration::from_millis(*duration_ms as u64)).await;
@@ -530,6 +588,9 @@ impl AutoplayManager {
                     require_non_discard,
                 )
                 .await;
+            if !self.cfg.read().await.autoplay.enabled {
+                return;
+            }
             // Once the client stops accepting presses it tends to stay that
             // way for the rest of the game — the failures do not come back
             // one at a time, they arrive and then every remaining decision
@@ -724,6 +785,9 @@ impl AutoplayManager {
         }
 
         for attempt in 0..=cfg.click_retries {
+            if !self.cfg.read().await.autoplay.enabled {
+                return false;
+            }
             if self
                 .wait_for_input(ticket, cfg.verify_input_ms, require_non_discard)
                 .await
@@ -1033,6 +1097,7 @@ fn future_window_grace(action: &MjaiEvent) -> Duration {
 /// now.
 #[allow(clippy::too_many_arguments)]
 async fn execute_riichi_frame(
+    live_config: Arc<RwLock<AppConfig>>,
     sleep_ms: u64,
     frame: Vec<u8>,
     action: MjaiEvent,
@@ -1116,6 +1181,9 @@ async fn execute_riichi_frame(
     let ticket = inject.rsp_ticket();
     let mut acked = false;
     for attempt in 0..=retries {
+        if !live_config.read().await.autoplay.enabled {
+            return;
+        }
         if !inject.send(InjectFrame {
             gameplay: true,
             bytes: frame.clone(),
