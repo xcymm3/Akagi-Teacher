@@ -168,6 +168,10 @@ pub async fn download_and_apply(
         .context("self_replace::self_replace")
         .map_err(UpdateError::from)?;
 
+    // restart exits without unwinding, so clean our download/staging copies
+    // explicitly instead of leaving large update folders after every upgrade.
+    drop(tempdir);
+
     // Trigger restart. The call shuts the process down and re-execs the
     // (now swapped) binary, so anything after this point in the source
     // is unreachable.
