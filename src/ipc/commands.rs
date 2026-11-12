@@ -7,7 +7,7 @@
 
 use crate::analysis::result::AnalysisResult;
 
-/// Optional presentation work, off the decision/autoplay runtime path.
+/// Decision-bound analysis shared with autoplay arbitration.
 #[tauri::command]
 pub async fn explain_bot_candidates(
     request: crate::analysis::coach::CoachRequest,
@@ -180,7 +180,37 @@ pub async fn update_config(
         });
     }
 
-    if claim_autoplay_manager_spawn(autoplay_now_enabled, &state.autoplay_manager_started) {
+    start_autoplay_manager(autoplay_now_enabled, &state);
+    use tauri::Emitter;
+    let _ = app.emit("autoplay-config", autoplay_now_enabled);
+    Ok(())
+}
+
+/// Flip `overlay.enabled` and apply it, without going through the Settings
+/// page's whole-config save.
+///
+/// The overlay's own close button is the reason this exists: closing the
+/// window can be hidden for this session, and the overlay webview has no
+/// business round-tripping (and re-persisting) an entire `AppConfig` it never
+/// loaded.
+#[tauri::command]
+pub async fn set_overlay_enabled(
+    enabled: bool,
+    app: AppHandle,
+    state: State<'_, AppState>,
+) -> CmdResult<()> {
+    let cfg = {
+        let mut cfg = state.config.write().await;
+        cfg.overlay.enabled = enabled;
+        cfg.clone()
+    };
+    persist_config(&cfg, &state.config_path).map_err(|e| e.to_string())?;
+    overlay::reconcile(&app, &cfg.overlay);
+    Ok(())
+}
+
+fn start_autoplay_manager(enabled: bool, state: &AppState) {
+    if claim_autoplay_manager_spawn(enabled, &state.autoplay_manager_started) {
         let cfg_for_ap = state.config.clone();
         let ctx_for_ap = state.autoplay_context.clone();
         let tracker_for_ap = state.game_tracker.clone();
@@ -210,29 +240,31 @@ pub async fn update_config(
             }
         });
     }
-    Ok(())
 }
 
-/// Flip `overlay.enabled` and apply it, without going through the Settings
-/// page's whole-config save.
-///
-/// The overlay's own close button is the reason this exists: closing the
-/// window has to *stay* closed across restarts, and the overlay webview has no
-/// business round-tripping (and re-persisting) an entire `AppConfig` it never
-/// loaded.
+/// Change only autoplay, persist atomically before publishing the live state.
 #[tauri::command]
-pub async fn set_overlay_enabled(
+pub async fn set_autoplay_enabled(
     enabled: bool,
     app: AppHandle,
     state: State<'_, AppState>,
 ) -> CmdResult<()> {
-    let cfg = {
-        let mut cfg = state.config.write().await;
-        cfg.overlay.enabled = enabled;
-        cfg.clone()
-    };
-    persist_config(&cfg, &state.config_path).map_err(|e| e.to_string())?;
-    overlay::reconcile(&app, &cfg.overlay);
+    {
+        let mut guard = state.config.write().await;
+        let mut next = guard.clone();
+        if enabled
+            && next.platform.kind != crate::config::Platform::RiichiCity
+            && next.capture.mode != crate::config::CaptureMode::Chromium
+        {
+            return Err("自动打牌需要 Chromium 捕获模式，请先在设置中切换".into());
+        }
+        next.autoplay.enabled = enabled;
+        persist_config(&next, &state.config_path).map_err(|e| e.to_string())?;
+        *guard = next;
+    }
+    start_autoplay_manager(enabled, &state);
+    use tauri::Emitter;
+    let _ = app.emit("autoplay-config", enabled);
     Ok(())
 }
 
@@ -1751,6 +1783,7 @@ macro_rules! ipc_handlers {
             $crate::ipc::commands::get_config,
             $crate::ipc::commands::update_config,
             $crate::ipc::commands::set_overlay_enabled,
+            $crate::ipc::commands::set_autoplay_enabled,
             $crate::ipc::commands::list_bots,
             $crate::ipc::commands::set_active_bot,
             $crate::ipc::commands::get_bot_settings,

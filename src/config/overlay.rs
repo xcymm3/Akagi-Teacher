@@ -17,7 +17,7 @@ pub struct OverlayConfig {
     /// Open the overlay window. On by default — the suggestions are the point
     /// of the app, and having to go find a setting to see them over the game is
     /// a worse first run than one extra window you can close with its × button.
-    /// Persisted, so both the closing and the leaving-open stick.
+    /// Changes are persisted within the session; startup opens it again.
     pub enabled: bool,
     /// How many Bot Show rows to render.
     pub top_n: usize,

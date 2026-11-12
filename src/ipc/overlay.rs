@@ -36,26 +36,19 @@ pub const LABEL: &str = "overlay";
 /// in sync when the overlay is closed from the overlay's own × button.
 pub const CONFIG_EVENT: &str = "overlay-config";
 
-/// Position and size are the only state worth restoring. The plugin's default
-/// (`StateFlags::all()`) would also restore DECORATIONS — putting a title bar
-/// back onto a window that is deliberately frameless — so `lib::run` excludes
-/// this label from the automatic restore and we do it ourselves.
-const RESTORE_FLAGS: StateFlags = StateFlags::POSITION.union(StateFlags::SIZE);
+/// Preserve position, but start compact instead of restoring an old tall window.
+const RESTORE_FLAGS: StateFlags = StateFlags::POSITION;
 
-const DEFAULT_WIDTH: f64 = 420.0;
-const MIN_WIDTH: f64 = 190.0;
+const DEFAULT_WIDTH: f64 = 520.0;
+const MIN_WIDTH: f64 = 320.0;
 
-// The rows split the window's height between them (see the `overlay-show` mahgen
-// kind), so the window's height has to be a function of how many rows there are.
-// A height that fits three rows comfortably squashes five into an unreadable
-// smear, and `top_n` is user-settable — so both the starting height and the
-// floor are derived from it rather than fixed.
+// Fixed-size compact rows keep tile sizing independent of the window height.
 /// Title bar, card border, and the padding around the list.
-const CHROME_HEIGHT: f64 = 48.0;
+const CHROME_HEIGHT: f64 = 84.0;
 /// Below this a row can no longer fit a legible tile next to its label.
 const MIN_ROW_HEIGHT: f64 = 34.0;
 /// Roomy enough that the tile is worth glancing at without leaning in.
-const DEFAULT_ROW_HEIGHT: f64 = 150.0;
+const DEFAULT_ROW_HEIGHT: f64 = 48.0;
 
 fn default_height(top_n: usize) -> f64 {
     CHROME_HEIGHT + top_n as f64 * DEFAULT_ROW_HEIGHT

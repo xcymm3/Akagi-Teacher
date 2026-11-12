@@ -121,6 +121,8 @@ export function useTauriBridge() {
     // The overlay window can turn itself off (its × button). Mirror that back
     // into the config store so the Game page's toggle doesn't keep claiming the
     // overlay is open.
+    listen<boolean>('autoplay-config', (enabled) => useConfigStore.getState().setAutoplay(enabled)).then((u) => unlistens.push(u))
+
     listen<OverlayConfig>('overlay-config', (o) => {
       useConfigStore.getState().setOverlay(o)
     }).then((u) => unlistens.push(u))

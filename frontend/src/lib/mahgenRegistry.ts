@@ -6,7 +6,7 @@
 
 export type MahgenKind =
   | 'river' | 'hand' | 'melds' | 'dora' | 'rec' | 'bot-action' | 'bot-show'
-  | 'overlay-show' | 'coach-show'
+  | 'overlay-show' | 'coach-show' | 'overlay-compact'
   | 'board-hand' | 'board-river' | 'board-meld' | 'hand-risk'
 
 type SizeCtx =
@@ -44,6 +44,7 @@ const SIZE_CTX: Record<MahgenKind, SizeCtx> = {
   // rather than getting cropped by the row's overflow.
   // Fixed size breaks the row/scrollbar/width feedback loop in teaching overlays.
   'coach-show': { mode: 'fixed', base: 48 },
+  'overlay-compact': { mode: 'fixed', base: 30 },
   'overlay-show': { mode: 'fill-height', pad: 8, min: 20, max: 120 },
   // board-*: compact tiles for the 2D table tile (BoardTile). Each seat's
   // mahgen container is a fraction of the square board, so these scale down

@@ -28,7 +28,9 @@ pub fn run() {
     platform::setup();
 
     let args = cli::Cli::parse();
-    let (cfg, config_path) = config::load_config(args.config.as_deref());
+    let (mut cfg, config_path) = config::load_config(args.config.as_deref());
+    // Open on every launch; closing applies to the current session.
+    cfg.overlay.enabled = true;
 
     let log_dir = util::resolve_dir(&cfg.logging.dir);
     let targets = [
@@ -186,7 +188,7 @@ pub fn run() {
 
                 ipc::install(app.handle(), state.clone())?;
 
-                // Reopen the suggestion overlay if it was left enabled. Safe
+                // Open the suggestion overlay at every launch. Safe
                 // before any game data exists — it renders its empty state and
                 // fills in on the first `bot-response`.
                 ipc::overlay::reconcile(app.handle(), &overlay_cfg);

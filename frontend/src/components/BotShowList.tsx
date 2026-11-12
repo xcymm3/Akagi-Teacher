@@ -8,20 +8,7 @@ import { mjaiToMahgen } from '@/lib/tileIdx'
 import { cn } from '@/lib/utils'
 import type { ShowItem, ShowMeta } from '@/types'
 
-// The bot's `meta.show` rows, rendered once and used twice: by the Bot Show
-// dashboard tile and by the always-on-top overlay window. Purely presentational
-// — see `@/lib/botShow` for the helpers that turn a `bot-response` into rows.
-//
-// The two variants differ in which axis drives the tile size, and that is the
-// whole reason they can't share one layout:
-//
-// - `tile` — rows hug their content and the list scrolls inside a dashboard
-//   tile that may be any height. Tile size follows the list's *width*.
-// - `overlay` — the window is small and its height is the scarce axis. Rows
-//   split the available height between them and each tile fills its own row, so
-//   the list always reaches the bottom edge and the tiles grow when the user
-//   drags the window taller. (Width-driven sizing here left a dead band under
-//   the last row and tiles too small to read at a glance.)
+// Shared candidate rendering; the overlay uses compact horizontal rows.
 
 type Props = {
   items: ShowItem[]
@@ -40,13 +27,13 @@ export function BotShowList({ items, show, containerRef, variant = 'tile', class
   const text = coach.facts ? formatCoach(coach.facts, i18n.language) : null
 
   return (
-    <div className={cn('flex flex-col gap-2', overlay && !coach.available && 'h-full')}>
-    {coach.available && <p className="text-[11px] text-muted-foreground">
+    <div className={cn('flex flex-col gap-1.5')}>
+    {coach.available && !overlay && <p className="text-[11px] text-muted-foreground">
       {zh ? '百分比为模型偏好' : 'Percentages are model preferences'}
     </p>}
     <ol
       ref={containerRef}
-      className={cn('flex flex-col gap-1', overlay && !coach.available && 'h-full', className)}
+      className={cn('flex flex-col gap-1', className)}
     >
       {items.map((it, i) => {
         const seq = it.tiles ?? (it.pais ? mjaiToMahgen(it.pais) : '')
@@ -54,11 +41,8 @@ export function BotShowList({ items, show, containerRef, variant = 'tile', class
           <li
             key={i}
             className={cn(
-              'flex flex-wrap items-center gap-2 overflow-hidden rounded-md border border-border px-2',
-              // flex-1 + min-h-0: the row's height comes from the window, not
-              // from the tile inside it — which is what stops the tile's own
-              // growth from feeding back into the measurement.
-              overlay && !coach.available ? 'min-h-0 flex-1' : 'py-1.5',
+              'flex items-center gap-2 overflow-hidden rounded-md border border-border px-2',
+              overlay ? 'flex-nowrap py-1' : 'flex-wrap py-1.5',
             )}
             style={{
               backgroundColor: hexToRgba(it.color, 0.1),
@@ -69,7 +53,7 @@ export function BotShowList({ items, show, containerRef, variant = 'tile', class
             {seq && (
               <Mahgen
                 seq={seq}
-                kind={coach.available ? 'coach-show' : overlay ? 'overlay-show' : 'bot-show'}
+                kind={overlay ? 'overlay-compact' : coach.available ? 'coach-show' : 'bot-show'}
                 // Overlay tiles measure their own row, so they must NOT be
                 // handed the list element: Mahgen falls back to the parent <li>.
                 containerRef={overlay ? undefined : containerRef}
@@ -83,6 +67,9 @@ export function BotShowList({ items, show, containerRef, variant = 'tile', class
                 <span className="truncate text-[10px] text-muted-foreground">{it.note}</span>
               )}
             </div>
+            {overlay && coach.available && i < 3 && <p title={[text?.reasons[i], text?.details[i]].filter(Boolean).join('\n')} className="min-w-0 flex-[4] whitespace-normal break-words text-xs leading-snug text-foreground/90">
+              {text?.reasons[i] ?? (coach.pending ? (zh ? '分析中…' : 'Analyzing…') : '')}
+            </p>}
             {it.value && (
               <div className="flex shrink-0 flex-col items-end gap-0.5">
               <span
@@ -98,7 +85,7 @@ export function BotShowList({ items, show, containerRef, variant = 'tile', class
               </span> : null}
               </div>
             )}
-            {coach.available && i < 3 && (!text || text.reasons[i]) && <p title={text?.details[i]} className="w-full whitespace-normal break-words text-xs leading-relaxed text-foreground/90">
+            {!overlay && coach.available && i < 3 && (!text || text.reasons[i]) && <p title={text?.details[i]} className="w-full whitespace-normal break-words text-xs leading-relaxed text-foreground/90">
               {text?.reasons[i] ?? (coach.pending
                 ? (zh ? '正在分析…' : 'Analyzing this decision…')
                 : (zh ? '暂无法取得解释。' : 'Explanation unavailable; the original recommendation is unchanged.'))}
@@ -107,7 +94,7 @@ export function BotShowList({ items, show, containerRef, variant = 'tile', class
         )
       })}
     </ol>
-    {text?.summary && <div className="rounded-md border border-border bg-muted/30 p-2 text-xs leading-relaxed" role="note">
+    {text?.summary && <div className="rounded-md border border-border bg-muted/30 px-2 py-1 text-xs leading-snug" role="note">
       <strong>{zh ? '局面解读：' : 'Hand analysis: '}</strong>{text.summary}
 
     </div>}
