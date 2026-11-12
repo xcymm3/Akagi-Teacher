@@ -1,13 +1,14 @@
 # Akagi Teacher 教师版中文使用说明
 
-本说明对应 `teacher-v3.7.2.7`，基于 Akagi v3.7.2，仅提供 Windows x64 便携包。
+本说明对应 `teacher-v3.7.2.8`，基于 Akagi v3.7.2，仅提供 Windows x64 便携包。
 
 ## 下载与启动
 
-1. 前往 [本仓库 Releases](https://github.com/xcymm3/Akagi-Teacher/releases/latest)，下载 `akagi-teacher-v3.7.2.7-windows-x64.zip`。不要选择 GitHub 自动生成的 `Source code` 压缩包。
+1. 前往 [本仓库 Releases](https://github.com/xcymm3/Akagi-Teacher/releases/latest)，下载 `akagi-teacher-v3.7.2.8-windows-x64.zip`。不要选择 GitHub 自动生成的 `Source code` 压缩包。
 2. 将整个压缩包解压到有写入权限的目录。保留程序旁的 `runtime` 文件夹，**不要在压缩包内直接运行，也不要只复制 EXE**。
-3. 关闭正在运行的旧版 Akagi，双击 `akagi-teacher.exe`。本包已带本地模型和 Python/uv 运行环境，无需另行训练模型、安装 Python 或购买云端密钥。
-4. 系统需具备 Microsoft Edge WebView2 Runtime。若程序提示缺少 WebView2，从 [微软官方页面](https://developer.microsoft.com/microsoft-edge/webview2/) 安装 Evergreen Runtime 后重试。此 EXE 未做数字签名，Windows 可能提示未知发布者；先确认下载来源和校验值。
+3. 已有完整旧版运行目录时，也可单独下载 `akagi-teacher-v3.7.2.8.exe`，放到原 EXE 同目录，保留 `runtime` 后运行；新用户请使用完整 ZIP。
+4. 关闭正在运行的旧版 Akagi，双击 `akagi-teacher.exe`。本包已带本地模型和 Python/uv 运行环境，无需另行训练模型、安装 Python 或购买云端密钥。
+5. 系统需具备 Microsoft Edge WebView2 Runtime。若程序提示缺少 WebView2，从 [微软官方页面](https://developer.microsoft.com/microsoft-edge/webview2/) 安装 Evergreen Runtime 后重试。此 EXE 未做数字签名，Windows 可能提示未知发布者；先确认下载来源和校验值。
 
 ## 首次配置
 
@@ -30,7 +31,7 @@
 - 百分比是当前模型偏好，不是和牌率或正确率。文字由独立的 mahjong-helper Go 核心计算，不能视为神经网络的真实理由。
 - 完整接入改良、后续进张、综合速度、听牌和率、立直/默听/副露打点、综合收支、危险度和参考排序。每项通常只展示基础牌效与最多两项有区分度的信息；鼠标悬停解释文字可查看具体指标。
 - 总结在参考排序支持模型首选时直接推荐；不一致时分别说明模型首选和另一候选的指标优势。仍有不支持的操作或牌形时不强行比较。
-- 只保留 **守** 标记：包括已立直对手的现物、立直后通过牌，以及逐事件确认的同巡安全牌。标签下方的文字列出对应对手，不表示对全桌绝对安全。
+- 只保留 **守** 标记：包括已立直对手的现物、立直后通过牌，以及逐事件确认的同巡安全牌。“守”位于牌名右侧，例如“4条 守”；原因文字列出对应对手，不表示对全桌绝对安全。
 - “刚打且无人和”仅在响应窗口已结束后纳入。未立直者的同巡安全信息会在其摸牌、吃碰杠或拔北改变手牌后失效；已立直者保留通过牌。仅缺少完整事件流的快照不推断同巡安全。
 - 防守指标包含筋、壁、巡目、早外、宝牌和估计失点修正，是综合风险指数，不直接当作放铳率。现物判断与风险指数分开处理。
 - 进张依据未见牌估算，包含可能在别人手中的牌，不等于真实牌山。速度、和率与收支沿用上游经验参数和统计表，并非精确真实对局概率。
@@ -42,6 +43,7 @@
 ## 自动打牌与悬浮窗
 
 - 每次启动打开悬浮窗；关闭仅影响当前运行，会保留窗口位置。
+- 候选牌名区域使用固定宽度，有无“守”均不改变三行原因文字的起始位置。
 - 拖动顶部40像素标题栏移动窗口。标题栏右侧有自动打牌开关，按钮区域不参与拖拽。
 - “自动打牌”使用左右滑动开关，点击直接启用或停用并保存状态，无需确认或进入设置页保存。已经发给游戏的操作无法撤回。
 - 雀魂和天凤需要 Chromium 捕获模式，并在 Akagi 连接的游戏页面内对局。快捷启用时若模式不符会给出提示，不会假装启用成功。
@@ -68,7 +70,7 @@
 同时下载 `SHA256SUMS.txt`，在 PowerShell 中执行：
 
 ```powershell
-Get-FileHash -Algorithm SHA256 .\akagi-teacher-v3.7.2.7-windows-x64.zip
+Get-FileHash -Algorithm SHA256 .\akagi-teacher-v3.7.2.8-windows-x64.zip
 ```
 
 将输出与 `SHA256SUMS.txt` 中对应 ZIP 的值比较。解压后的 EXE 校验值也列在校验文件中。
@@ -76,7 +78,8 @@ Get-FileHash -Algorithm SHA256 .\akagi-teacher-v3.7.2.7-windows-x64.zip
 ## 验证与来源
 
 - 四麻模型沿用 v3.7.2.6 的 06 权重；该版已验证模型核心50项及应用层本地bot33项。
-- 本次前端110项测试、构建和ESLint检查通过；自动打牌155项、教师核心7项、原生bot33项及悬浮窗3项测试通过。
+- 本次前端110项测试、构建和ESLint检查通过。后端逻辑沿用v3.7.2.7，该版自动打牌155项、教师核心7项、原生bot33项、悬浮窗3项及配置命令6项测试通过。
+- 使用实际前端组件与原有牌图完成浏览器截图检查，验证三行原因对齐、滑动开关直接切换且不出现确认框；示例数据不代表实局。
 - 四麻和三麻推理 parity 测试通过；四麻另核对 16 个真实验证局面，合法动作首选与 PyTorch 参考一致。合成压力输入使用适合大幅值浮点数的混合误差容限。
 - Windows release 构建、模型嵌入检查和 EXE `--help` 启动检查通过；未进行真实牌局界面验收。
 - 四麻权重 SHA-256：`d789d430f4a905284990d745e6e4549411e9290c52dfb1c83b088697a684dfb6`。三麻权重和依赖锁文件保持原样。运行环境沿用先前干净发行包，不复制本机运行目录中的用户配置和数据。
