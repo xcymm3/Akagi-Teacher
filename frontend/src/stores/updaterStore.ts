@@ -44,6 +44,8 @@ type Persisted = {
 }
 
 type Ephemeral = {
+  checkedThisSession: boolean
+  lastError: string | null
   /// Result of the most recent `check_for_update`. NOT persisted — we
   /// always re-fetch on launch (subject to the 6h cache) so a release
   /// that was deleted / unpublished doesn't keep nagging.
@@ -77,6 +79,8 @@ type Actions = {
 export type UpdaterStore = Persisted & Ephemeral & Actions
 
 const initialEphemeral: Ephemeral = {
+  checkedThisSession: false,
+  lastError: null,
   pendingUpdate: null,
   applying: false,
   toastShownThisSession: false,
@@ -96,16 +100,17 @@ export const useUpdaterStore = create<UpdaterStore>()(
         if (get().checking) return
         if (!force) {
           const last = get().lastChecked ?? 0
-          if (Date.now() - last < CHECK_CACHE_MS) return
+          if (get().checkedThisSession && Date.now() - last < CHECK_CACHE_MS) return
         }
-        set({ checking: true })
+        set({ checking: true, lastError: null })
         try {
           const info = await invoke<UpdateInfo | null>('check_for_update')
-          set({ pendingUpdate: info, lastChecked: Date.now() })
+          set({ pendingUpdate: info, lastChecked: Date.now(), checkedThisSession: true })
         } catch (e) {
           // Network / parse failures: just log; the toast layer will
           // see `pendingUpdate === null` and stay quiet. Settings card
           // shows the error via its own try/catch wrapper.
+          set({ lastError: String(e) })
           console.warn('check_for_update failed:', e)
         } finally {
           set({ checking: false })

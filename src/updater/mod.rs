@@ -1,4 +1,6 @@
-//! In-app update checker + self-replace flow.
+//! Teacher release update checker + self-replace flow.
+//! `teacher` defines the four-part release identity and authenticated EXE assets.
+//! Teacher metadata and downloads use direct GitHub HTTPS with mandatory SHA-256.
 //!
 //! Layered for testability:
 //!
@@ -24,6 +26,7 @@
 pub mod apply;
 pub mod check;
 pub mod error;
+pub mod teacher;
 
 pub use check::{check_for_update, UpdateInfo};
 pub use error::UpdateError;

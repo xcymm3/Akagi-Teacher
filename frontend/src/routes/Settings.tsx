@@ -1,7 +1,6 @@
 import { useEffect, useState } from 'react'
 import { Link, useBlocker } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
-import { getVersion } from '@tauri-apps/api/app'
 import { toast } from 'sonner'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
@@ -346,7 +345,7 @@ export function Settings() {
 }
 
 /** GitHub download routing — accelerator-mirror fallback for regions where
- *  GitHub is blocked. Used by the in-app updater and the bot installer;
+ *  GitHub is blocked. Used by the bot installer; teacher self-updates use direct GitHub HTTPS.
  *  Chrome-for-Testing downloads fall back to a mirror automatically and
  *  need no setting here. */
 function NetworkCard({
@@ -1461,12 +1460,14 @@ function UpdatesCard() {
   const [currentVersion, setCurrentVersion] = useState('—')
   useEffect(() => {
     if (!HAS_TAURI) return
-    getVersion().then(setCurrentVersion).catch(() => {})
+    invoke<string>('get_teacher_version').then(setCurrentVersion).catch(() => {})
   }, [])
 
   const handleCheck = async () => {
     const before = useUpdaterStore.getState().pendingUpdate?.latest_tag ?? null
     await checkNow(true)
+    const checkError = useUpdaterStore.getState().lastError
+    if (checkError) { toast.error(checkError); return }
     const after = useUpdaterStore.getState().pendingUpdate
     if (!after) {
       toast.success(t('updates.settings.up_to_date'))

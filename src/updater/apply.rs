@@ -23,7 +23,7 @@ use crate::updater::check::UpdateInfo;
 use crate::updater::error::UpdateError;
 use anyhow::{anyhow, Context, Result};
 use std::path::{Path, PathBuf};
-use tauri::AppHandle;
+use tauri::{AppHandle, Manager};
 use tracing::{info as log_info, warn};
 
 /// Top-level entry point called by the `apply_update` IPC command.
@@ -35,6 +35,13 @@ pub async fn download_and_apply(
     info: &UpdateInfo,
     net: &NetworkConfig,
 ) -> Result<(), UpdateError> {
+    let teacher_update = info.latest_tag.starts_with("teacher-v");
+    if teacher_update {
+        validate_teacher_info(info).map_err(UpdateError::from)?;
+        ensure_game_idle(app).await?;
+    }
+    let direct = super::teacher::direct_network();
+    let net = if teacher_update { &direct } else { net };
     // Determine the running exe path and verify its parent is writable
     // before we burn bandwidth on a download we can't apply.
     let current_exe = std::env::current_exe()
@@ -117,26 +124,32 @@ pub async fn download_and_apply(
         }
     }
 
-    // Extract the whole zip into a sibling dir, then locate the binary
-    // entry. The release zip wraps everything in a single
-    // `akagi-<version>-<triple>/` directory, so the binary lives one
-    // level down. We don't extract the runtime tree — too large and the
-    // user is told to manually reinstall when the runtime version
-    // changes.
-    let extract_dir = tempdir.path().join("extracted");
-    std::fs::create_dir(&extract_dir)
-        .with_context(|| format!("mkdir {}", extract_dir.display()))
-        .map_err(UpdateError::from)?;
-    extract_zip_safe(&zip_path, &extract_dir)
-        .context("extract release zip")
-        .map_err(UpdateError::from)?;
+    let new_binary = if teacher_update {
+        let binary = tempdir.path().join("akagi-teacher.exe");
+        prepare_teacher_binary(info, &zip_path, &binary).map_err(UpdateError::from)?;
+        binary
+    } else {
+        // Extract the whole zip into a sibling dir, then locate the binary
+        // entry. The release zip wraps everything in a single
+        // `akagi-<version>-<triple>/` directory, so the binary lives one
+        // level down. We don't extract the runtime tree — too large and the
+        // user is told to manually reinstall when the runtime version
+        // changes.
+        let extract_dir = tempdir.path().join("extracted");
+        std::fs::create_dir(&extract_dir)
+            .with_context(|| format!("mkdir {}", extract_dir.display()))
+            .map_err(UpdateError::from)?;
+        extract_zip_safe(&zip_path, &extract_dir)
+            .context("extract release zip")
+            .map_err(UpdateError::from)?;
 
-    let binary_name = current_exe
-        .file_name()
-        .ok_or_else(|| anyhow!("current_exe has no file name"))
-        .map_err(UpdateError::from)?
-        .to_owned();
-    let new_binary = find_binary(&extract_dir, &binary_name).ok_or(UpdateError::NoMatchingAsset)?;
+        let binary_name = current_exe
+            .file_name()
+            .ok_or_else(|| anyhow!("current_exe has no file name"))
+            .map_err(UpdateError::from)?
+            .to_owned();
+        find_binary(&extract_dir, &binary_name).ok_or(UpdateError::NoMatchingAsset)?
+    };
 
     #[cfg(unix)]
     {
@@ -148,6 +161,9 @@ pub async fn download_and_apply(
     // currently-running ELF/Mach-O (the kernel keeps the running inode
     // alive). On Windows it's the documented copy + delete-on-close
     // dance — see the self_replace crate docs for the gory details.
+    if teacher_update {
+        ensure_game_idle(app).await?;
+    }
     self_replace::self_replace(&new_binary)
         .context("self_replace::self_replace")
         .map_err(UpdateError::from)?;
@@ -156,6 +172,77 @@ pub async fn download_and_apply(
     // (now swapped) binary, so anything after this point in the source
     // is unreachable.
     app.restart();
+}
+
+/// No active round may be interrupted by the updater's restart.
+async fn ensure_game_idle(app: &AppHandle) -> Result<(), UpdateError> {
+    let state = app.state::<crate::ipc::AppState>();
+    if state
+        .game_tracker
+        .lock()
+        .await
+        .snapshot()
+        .is_some_and(|s| !s.is_done)
+    {
+        return Err(UpdateError::Other {
+            message: "当前牌局尚未结束，请结束牌局后再更新".into(),
+        });
+    }
+    Ok(())
+}
+
+fn validate_teacher_info(info: &UpdateInfo) -> Result<()> {
+    anyhow::ensure!(
+        info.meta_source == Source::Direct,
+        "untrusted teacher update metadata"
+    );
+    super::teacher::validate_asset(
+        &info.latest_tag,
+        &crate::github::Asset {
+            name: info.asset_name.clone(),
+            browser_download_url: info.asset_url.clone(),
+            size: Some(info.asset_size),
+            digest: info
+                .asset_digest_sha256
+                .as_ref()
+                .map(|h| format!("sha256:{h}")),
+        },
+    )
+}
+
+/// The destination name is independent of the currently running EXE's name.
+/// No runtime, profile or config files are read or extracted here.
+fn prepare_teacher_binary(info: &UpdateInfo, download: &Path, destination: &Path) -> Result<()> {
+    use std::io::{Read, Seek, SeekFrom};
+    validate_teacher_info(info)?;
+    let mut file = std::fs::File::open(download)?;
+    anyhow::ensure!(
+        file.metadata()?.len() == info.asset_size,
+        "downloaded executable size mismatch"
+    );
+    let mut dos = [0u8; 64];
+    file.read_exact(&mut dos)?;
+    anyhow::ensure!(&dos[..2] == b"MZ", "update is not a Windows executable");
+    let offset = u32::from_le_bytes(dos[60..64].try_into().unwrap()) as u64;
+    anyhow::ensure!(
+        offset >= 64 && offset + 26 <= info.asset_size,
+        "invalid PE header offset"
+    );
+    file.seek(SeekFrom::Start(offset))?;
+    let mut pe = [0u8; 26];
+    file.read_exact(&mut pe)?;
+    anyhow::ensure!(
+        &pe[..4] == b"PE\0\0" && u16::from_le_bytes([pe[4], pe[5]]) == 0x8664,
+        "update is not a Windows x64 executable"
+    );
+    let flags = u16::from_le_bytes([pe[22], pe[23]]);
+    anyhow::ensure!(
+        flags & 2 != 0 && flags & 0x2000 == 0 && pe[24..26] == [0x0b, 0x02],
+        "invalid executable type"
+    );
+    drop(file);
+    std::fs::copy(download, destination)?;
+    Ok(())
 }
 
 /// Returns true if `dir` looks writable. We do an explicit write-probe
@@ -265,5 +352,58 @@ mod tests {
     fn is_dir_writable_for_tempdir() {
         let tmp = TempDir::new().unwrap();
         assert!(is_dir_writable(tmp.path()));
+    }
+}
+
+#[cfg(test)]
+mod teacher_update_tests {
+    use super::*;
+    fn executable() -> Vec<u8> {
+        let mut bytes = vec![0u8; 128];
+        bytes[..2].copy_from_slice(b"MZ");
+        bytes[60..64].copy_from_slice(&64u32.to_le_bytes());
+        bytes[64..68].copy_from_slice(b"PE\0\0");
+        bytes[68..70].copy_from_slice(&0x8664u16.to_le_bytes());
+        bytes[86..88].copy_from_slice(&2u16.to_le_bytes());
+        bytes[88..90].copy_from_slice(&0x20bu16.to_le_bytes());
+        bytes
+    }
+    fn info(size: u64) -> UpdateInfo {
+        UpdateInfo { current: "3.7.2.8".into(), latest_tag: "teacher-v3.7.2.9".into(), latest_version: "3.7.2.9".into(),
+            body: String::new(), html_url: String::new(), asset_name: "akagi-teacher-v3.7.2.9.exe".into(),
+            asset_url: "https://github.com/xcymm3/Akagi-Teacher/releases/download/teacher-v3.7.2.9/akagi-teacher-v3.7.2.9.exe".into(),
+            asset_size: size, asset_digest_sha256: Some("a".repeat(64)), sig_url: None, meta_source: Source::Direct }
+    }
+    #[test]
+    fn staging_supports_old_exe_names_and_preserves_other_files() {
+        let dir = tempfile::tempdir().unwrap();
+        let raw = dir.path().join("download");
+        let config = dir.path().join("config.toml");
+        std::fs::write(&config, "keep configuration").unwrap();
+        let bytes = executable();
+        std::fs::write(&raw, &bytes).unwrap();
+        let target = dir.path().join("akagi-teacher-v3.7.2.8.exe");
+        prepare_teacher_binary(&info(bytes.len() as u64), &raw, &target).unwrap();
+        assert_eq!(std::fs::read(target).unwrap(), bytes);
+        assert_eq!(
+            std::fs::read_to_string(config).unwrap(),
+            "keep configuration"
+        );
+    }
+    #[test]
+    fn rejects_truncated_wrong_architecture_and_non_executable_downloads() {
+        let dir = tempfile::tempdir().unwrap();
+        let raw = dir.path().join("download");
+        let target = dir.path().join("new.exe");
+        let mut bytes = executable();
+        std::fs::write(&raw, &bytes).unwrap();
+        assert!(prepare_teacher_binary(&info(129), &raw, &target).is_err());
+        bytes[68] = 0x4c;
+        bytes[69] = 0x01;
+        std::fs::write(&raw, &bytes).unwrap();
+        assert!(prepare_teacher_binary(&info(128), &raw, &target).is_err());
+        std::fs::write(&raw, vec![0u8; 128]).unwrap();
+        assert!(prepare_teacher_binary(&info(128), &raw, &target).is_err());
+        assert!(!target.exists());
     }
 }

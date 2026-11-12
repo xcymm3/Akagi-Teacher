@@ -1,12 +1,12 @@
 # Akagi Teacher 教师版中文使用说明
 
-本说明对应 `teacher-v3.7.2.8`，基于 Akagi v3.7.2，仅提供 Windows x64 便携包。
+本说明对应 `teacher-v3.7.2.9`，基于 Akagi v3.7.2，仅提供 Windows x64 便携包。
 
 ## 下载与启动
 
-1. 前往 [本仓库 Releases](https://github.com/xcymm3/Akagi-Teacher/releases/latest)，下载 `akagi-teacher-v3.7.2.8-windows-x64.zip`。不要选择 GitHub 自动生成的 `Source code` 压缩包。
+1. 前往 [本仓库 Releases](https://github.com/xcymm3/Akagi-Teacher/releases/latest)，下载 `akagi-teacher-v3.7.2.9-windows-x64.zip`。不要选择 GitHub 自动生成的 `Source code` 压缩包。
 2. 将整个压缩包解压到有写入权限的目录。保留程序旁的 `runtime` 文件夹，**不要在压缩包内直接运行，也不要只复制 EXE**。
-3. 已有完整旧版运行目录时，也可单独下载 `akagi-teacher-v3.7.2.8.exe`，放到原 EXE 同目录，保留 `runtime` 后运行；新用户请使用完整 ZIP。
+3. 已有完整旧版运行目录时，也可单独下载 `akagi-teacher-v3.7.2.9.exe`，放到原 EXE 同目录，保留 `runtime` 后运行；新用户请使用完整 ZIP。
 4. 关闭正在运行的旧版 Akagi，双击 `akagi-teacher.exe`。本包已带本地模型和 Python/uv 运行环境，无需另行训练模型、安装 Python 或购买云端密钥。
 5. 系统需具备 Microsoft Edge WebView2 Runtime。若程序提示缺少 WebView2，从 [微软官方页面](https://developer.microsoft.com/microsoft-edge/webview2/) 安装 Evergreen Runtime 后重试。此 EXE 未做数字签名，Windows 可能提示未知发布者；先确认下载来源和校验值。
 
@@ -62,15 +62,25 @@
 - **显示“正在分析”**：等待后台分析；新建议到来后，旧分析结果会被丢弃，不会贴到新候选上。
 - **悬浮窗显示不全**：手动拉大窗口或滚动查看。默认三行尺寸约520×228，启动保留位置并恢复紧凑尺寸；长文字会自动换行。
 - **抓不到对局数据**：在“对局 / Game”页检查 Capture 状态；如未捕获开局，可重新连接并从下一局开始确认。
-- **更新教师版**：从本仓库 Releases 下载。当前程序仍继承上游的应用内更新入口，**不要通过该入口覆盖教师版**，否则可能被替换成普通上游版本。
+- **更新教师版**：从本仓库 Releases 下载。本版应用内更新入口已固定到 `xcymm3/Akagi-Teacher`。可在软件内更新，也可从本仓库Releases手动下载。
 - **配置和数据位置**：程序会自动创建运行数据目录。上游可能优先读取系统用户配置目录中已有的 Akagi 配置，备份或迁移时请以实际加载位置为准。发行包不含任何用户登录信息、证书私钥、配置、日志或牌谱。
+
+## 软件内自动更新
+
+- 首次需要安装一次v3.7.2.9或更高版本，旧版更新器无法自动切换到教师版仓库。
+- 默认启动约3秒后检查 `xcymm3/Akagi-Teacher` 的最新Release；长时间运行时约每6小时检查一次。可在“设置 → 更新”关闭自动检查，或点击“检查更新”立即检查。
+- 有新版时出现软件内提示，点击查看详情，再点“立即更新”。程序会下载独立EXE，校验SHA-256、文件大小及Windows x64程序格式，替换当前程序并自动重启。
+- 当前牌局未结束时会拒绝安装；可结束牌局后再点“立即更新”。检查和下载失败会保留原程序，设置页不会把网络失败误报成“已是最新版”。
+- 只替换当前EXE，保留配置、登录资料、运行环境和牌谱。若原EXE文件名带旧版本号，更新后文件名仍可能保持原样，以“设置 → 更新”的内部版本号为准。
+- 自动更新直接连接GitHub，不使用第三方镜像，必须取得GitHub返回的有效SHA-256；目前只支持Windows x64。更新涉及运行环境重大变化时，仍需完整便携包。
+- 发布维护：同步 `src/updater/teacher.rs` 的 `VERSION` 与 `teacher-v<四段版本号>` 标签，并上传 `akagi-teacher-v<四段版本号>.exe`。四段版本按数字比较，例如 `.10` 新于 `.9`；缺少EXE或校验值不会安装。
 
 ## 校验下载
 
 同时下载 `SHA256SUMS.txt`，在 PowerShell 中执行：
 
 ```powershell
-Get-FileHash -Algorithm SHA256 .\akagi-teacher-v3.7.2.8-windows-x64.zip
+Get-FileHash -Algorithm SHA256 .\akagi-teacher-v3.7.2.9-windows-x64.zip
 ```
 
 将输出与 `SHA256SUMS.txt` 中对应 ZIP 的值比较。解压后的 EXE 校验值也列在校验文件中。
@@ -78,7 +88,7 @@ Get-FileHash -Algorithm SHA256 .\akagi-teacher-v3.7.2.8-windows-x64.zip
 ## 验证与来源
 
 - 四麻模型沿用 v3.7.2.6 的 06 权重；该版已验证模型核心50项及应用层本地bot33项。
-- 本次前端110项测试、构建和ESLint检查通过。后端逻辑沿用v3.7.2.7，该版自动打牌155项、教师核心7项、原生bot33项、悬浮窗3项及配置命令6项测试通过。
+- 本次前端112项测试、构建和ESLint检查通过；更新器25项测试通过，覆盖教师版版本比较、可信附件校验和程序准备。后端逻辑沿用v3.7.2.7，该版自动打牌155项、教师核心7项、原生bot33项、悬浮窗3项及配置命令6项测试通过。
 - 使用实际前端组件与原有牌图完成浏览器截图检查，验证三行原因对齐、滑动开关直接切换且不出现确认框；示例数据不代表实局。
 - 四麻和三麻推理 parity 测试通过；四麻另核对 16 个真实验证局面，合法动作首选与 PyTorch 参考一致。合成压力输入使用适合大幅值浮点数的混合误差容限。
 - Windows release 构建、模型嵌入检查和 EXE `--help` 启动检查通过；未进行真实牌局界面验收。

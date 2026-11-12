@@ -1369,10 +1369,13 @@ pub async fn delete_game_history_entry(id: String, state: State<'_, AppState>) -
     Ok(removed)
 }
 
-/// `shinkuan/Akagi` is the canonical upstream — kept here as a const
-/// instead of plumbing through config so the user can't accidentally
-/// point the auto-updater at a fork.
-const UPSTREAM_REPO: &str = "shinkuan/Akagi";
+/// The teacher edition follows this repository, never the upstream binary.
+const UPSTREAM_REPO: &str = crate::updater::teacher::REPO;
+
+#[tauri::command]
+pub fn get_teacher_version() -> &'static str {
+    crate::updater::teacher::VERSION
+}
 
 /// One-shot "is there a newer release?" — frontend calls this on app
 /// launch (with a 6h cache) and from the Settings "Check for updates"
@@ -1781,6 +1784,7 @@ macro_rules! ipc_handlers {
     () => {
         ::tauri::generate_handler![
             $crate::ipc::commands::get_config,
+            $crate::ipc::commands::get_teacher_version,
             $crate::ipc::commands::update_config,
             $crate::ipc::commands::set_overlay_enabled,
             $crate::ipc::commands::set_autoplay_enabled,

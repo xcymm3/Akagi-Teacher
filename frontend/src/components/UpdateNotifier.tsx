@@ -33,7 +33,8 @@ export function UpdateNotifier() {
     const id = window.setTimeout(() => {
       void checkNow(false)
     }, 3000)
-    return () => window.clearTimeout(id)
+    const interval = window.setInterval(() => { void checkNow(false) }, 6 * 60 * 60 * 1000)
+    return () => { window.clearTimeout(id); window.clearInterval(interval) }
     // checkNow is stable (zustand action) — listing it would just churn.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [autoCheckEnabled])

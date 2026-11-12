@@ -127,8 +127,18 @@ pub async fn check_for_update(repo: &str, net: &NetworkConfig) -> Result<Option<
     };
 
     let client = build_client()?;
-    let (release, source) = fetch_latest_release_mirrored(&client, repo, net).await?;
-    build_update_info(env!("CARGO_PKG_VERSION"), triple, repo, &release, source)
+    let direct = super::teacher::direct_network();
+    let network = if repo == super::teacher::REPO {
+        &direct
+    } else {
+        net
+    };
+    let (release, source) = fetch_latest_release_mirrored(&client, repo, network).await?;
+    if repo == super::teacher::REPO {
+        super::teacher::build_info(super::teacher::VERSION, triple, &release, source)
+    } else {
+        build_update_info(env!("CARGO_PKG_VERSION"), triple, repo, &release, source)
+    }
 }
 
 /// Pure half of `check_for_update`. Split out so tests can drive it
