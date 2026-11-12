@@ -59,6 +59,9 @@ export function BotShowList({ items, show, containerRef, variant = 'tile', class
                 containerRef={overlay ? undefined : containerRef}
               />
             )}
+            {text?.markers[i]?.length ? <span className="flex shrink-0 gap-1 text-xs font-semibold">
+              {text.markers[i].map(marker => <span key={marker} className="rounded bg-muted px-1" title={zh ? '对所列对手的现物或同巡安全牌；同巡信息可能在摸牌或鸣牌后失效' : 'Genbutsu or a passed tile against the listed players; temporary safety expires after a draw or call'}>{marker}</span>)}
+            </span> : null}
             <div className="flex min-w-0 flex-1 flex-col">
               {(text?.labels[i] || it.label) && (
                 <span className="truncate text-sm text-foreground">{text?.labels[i] ?? it.label}</span>
@@ -80,9 +83,6 @@ export function BotShowList({ items, show, containerRef, variant = 'tile', class
               >
                 {it.value}
               </span>
-              {text?.markers[i]?.length ? <span className="flex gap-1 text-xs font-semibold">
-                {text.markers[i].map(marker => <span key={marker} className="rounded bg-muted px-1" title={zh ? '对所列对手的现物或同巡安全牌；同巡信息可能在摸牌或鸣牌后失效' : 'Genbutsu or a passed tile against the listed players; temporary safety expires after a draw or call'}>{marker}</span>)}
-              </span> : null}
               </div>
             )}
             {!overlay && coach.available && i < 3 && (!text || text.reasons[i]) && <p title={text?.details[i]} className="w-full whitespace-normal break-words text-xs leading-relaxed text-foreground/90">
