@@ -17,16 +17,11 @@ describe('overlay autoplay shortcut', () => {
       : undefined))
   })
 
-  it('requires confirmation, applies without a settings save, and stops directly', async () => {
+  it('toggles immediately without confirmation or a settings save', async () => {
     render(<Overlay />)
     await waitFor(() => expect((screen.getByRole('switch') as HTMLButtonElement).disabled).toBe(false))
     fireEvent.click(screen.getByRole('switch'))
-    expect(screen.getByRole('alertdialog')).toBeDefined()
-    expect(invoke).not.toHaveBeenCalledWith('set_autoplay_enabled', expect.anything())
-    fireEvent.click(screen.getByText('取消'))
     expect(screen.queryByRole('alertdialog')).toBeNull()
-    fireEvent.click(screen.getByRole('switch'))
-    fireEvent.click(screen.getByText('确认启用'))
     await waitFor(() => expect(screen.getByRole('switch').getAttribute('aria-checked')).toBe('true'))
     expect(invoke).toHaveBeenCalledWith('set_autoplay_enabled', { enabled: true })
     expect(invoke).not.toHaveBeenCalledWith('update_config', expect.anything())
@@ -40,9 +35,8 @@ describe('overlay autoplay shortcut', () => {
     await waitFor(() => expect((screen.getByRole('switch') as HTMLButtonElement).disabled).toBe(false))
     invoke.mockRejectedValueOnce(new Error('需要 Chromium'))
     fireEvent.click(screen.getByRole('switch'))
-    fireEvent.click(screen.getByText('确认启用'))
     await waitFor(() => expect(screen.getByRole('alert').textContent).toContain('Chromium'))
     expect(screen.getByRole('switch').getAttribute('aria-checked')).toBe('false')
-    expect(screen.getByRole('alertdialog')).toBeDefined()
+    expect(screen.queryByRole('alertdialog')).toBeNull()
   })
 })

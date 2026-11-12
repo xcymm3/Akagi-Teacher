@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { GripHorizontal, Power, X } from 'lucide-react'
+import { GripHorizontal, X } from 'lucide-react'
 import { BotShowList } from '@/components/BotShowList'
 import { pickShow, visibleItems } from '@/lib/botShow'
 import { invoke, listen } from '@/lib/tauri'
@@ -22,7 +22,6 @@ export function Overlay() {
   const { t } = useTranslation()
   const [show, setShow] = useState<ShowMeta | null>(null)
   const [autoplay, setAutoplay] = useState(false)
-  const [confirming, setConfirming] = useState(false)
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState('')
   const [ready, setReady] = useState(false)
@@ -71,7 +70,6 @@ export function Overlay() {
     try {
       await invoke('set_autoplay_enabled', { enabled })
       setAutoplay(enabled)
-      setConfirming(false)
     } catch (e) { setError(String(e)) }
     finally { setBusy(false) }
   }
@@ -86,21 +84,17 @@ export function Overlay() {
           </span>
           <button type="button" role="switch" aria-checked={autoplay} aria-label="自动打牌" disabled={busy || !ready}
             title={autoplay ? '关闭自动打牌' : '开启自动打牌'}
-            onClick={() => autoplay ? void changeAutoplay(false) : (setError(''), setConfirming(true))}
-            className={`flex shrink-0 items-center gap-1 rounded px-2 py-1 text-xs cursor-pointer disabled:opacity-50 ${autoplay ? 'bg-green-600 text-white' : 'bg-background text-muted-foreground hover:text-foreground'}`}>
-            <Power className="size-3.5" />自动{autoplay ? '开' : '关'}
+            onClick={() => void changeAutoplay(!autoplay)}
+            className="flex shrink-0 items-center gap-2 rounded px-1 py-1 text-xs cursor-pointer text-foreground disabled:opacity-50">
+            <span>自动打牌</span>
+            <span aria-hidden="true" className={`relative h-5 w-9 shrink-0 rounded-full transition-colors ${autoplay ? 'bg-green-600' : 'bg-muted-foreground/40'}`}>
+              <span className="absolute top-0.5 left-0.5 size-4 rounded-full bg-white shadow-sm transition-transform duration-150" style={{ transform: `translateX(${autoplay ? 16 : 0}px)` }} />
+            </span>
           </button>
           <button type="button" onClick={close} aria-label={t('overlay.close')} title={t('overlay.close')} className="shrink-0 rounded p-1.5 cursor-pointer text-muted-foreground hover:bg-background hover:text-foreground">
             <X className="size-4" />
           </button>
         </header>
-        {confirming && <div role="alertdialog" aria-label="确认开启自动打牌" className="shrink-0 border-b border-border bg-muted p-2 text-xs">
-          <p>开启后会自动操作：意见一致时跟随首选；分歧时模型概率大于60%跟随模型，否则跟随教师。</p>
-          <div className="mt-2 flex justify-end gap-2">
-            <button type="button" disabled={busy} onClick={() => { setConfirming(false); setError('') }} className="rounded border px-2 py-1">取消</button>
-            <button type="button" disabled={busy} onClick={() => void changeAutoplay(true)} className="rounded bg-primary px-2 py-1 text-primary-foreground">{busy ? '启用中…' : '确认启用'}</button>
-          </div>
-        </div>}
         {error && <p role="alert" className="shrink-0 px-2 py-1 text-xs text-red-500">{error}</p>}
         <div className="min-h-0 flex-1 overflow-y-auto [scrollbar-gutter:stable] px-1.5 py-1.5">
           {items.length === 0 ? <span className="px-1 text-xs text-muted-foreground">{t('overlay.empty')}</span>

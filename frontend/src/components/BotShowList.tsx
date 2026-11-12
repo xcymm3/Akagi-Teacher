@@ -59,22 +59,24 @@ export function BotShowList({ items, show, containerRef, variant = 'tile', class
                 containerRef={overlay ? undefined : containerRef}
               />
             )}
-            {text?.markers[i]?.length ? <span className="flex shrink-0 gap-1 text-xs font-semibold">
-              {text.markers[i].map(marker => <span key={marker} className="rounded bg-muted px-1" title={zh ? '对所列对手的现物或同巡安全牌；同巡信息可能在摸牌或鸣牌后失效' : 'Genbutsu or a passed tile against the listed players; temporary safety expires after a draw or call'}>{marker}</span>)}
-            </span> : null}
-            <div className="flex min-w-0 flex-1 flex-col">
+            <div className={cn("flex min-w-0 flex-col", overlay ? "w-[68px] shrink-0" : "flex-1")}>
               {(text?.labels[i] || it.label) && (
-                <span className="truncate text-sm text-foreground">{text?.labels[i] ?? it.label}</span>
+                <span className="flex min-w-0 items-center gap-1">
+                  <span className="truncate text-sm text-foreground">{text?.labels[i] ?? it.label}</span>
+                  {text?.markers[i]?.length ? <span className="flex shrink-0 gap-1 text-xs font-semibold">
+                    {text.markers[i].map(marker => <span key={marker} className="rounded bg-muted px-1" title={zh ? '对所列对手的现物或同巡安全牌；同巡信息可能在摸牌或鸣牌后失效' : 'Genbutsu or a passed tile against the listed players; temporary safety expires after a draw or call'}>{marker}</span>)}
+                  </span> : null}
+                </span>
               )}
               {it.note && (
                 <span className="truncate text-[10px] text-muted-foreground">{it.note}</span>
               )}
             </div>
-            {overlay && coach.available && i < 3 && <p title={[text?.reasons[i], text?.details[i]].filter(Boolean).join('\n')} className="min-w-0 flex-[4] whitespace-normal break-words text-xs leading-snug text-foreground/90">
+            {overlay && coach.available && i < 3 && <p title={[text?.reasons[i], text?.details[i]].filter(Boolean).join('\n')} className="min-w-0 flex-1 whitespace-normal break-words text-xs leading-snug text-foreground/90">
               {text?.reasons[i] ?? (coach.pending ? (zh ? '分析中…' : 'Analyzing…') : '')}
             </p>}
             {it.value && (
-              <div className="flex shrink-0 flex-col items-end gap-0.5">
+              <div className={cn("flex shrink-0 flex-col items-end gap-0.5", overlay && "w-10")}>
               <span
                 className={cn(
                   'font-mono tabular-nums text-foreground/90',
