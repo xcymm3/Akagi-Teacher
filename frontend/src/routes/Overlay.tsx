@@ -52,7 +52,8 @@ export function Overlay() {
 
     listen<OverlayConfig>('overlay-config', (c) => setCfg(c)).then((u) => unlistens.push(u))
     listen<MjaiEvent>('mjai-event', (e) => {
-      if (['start_game', 'start_kyoku', 'end_kyoku', 'end_game'].includes(e.type)) setShow(null)
+      if (['start_game', 'start_kyoku', 'end_game'].includes(e.type)) setShow(null)
+      if (e.type === 'end_kyoku') setShow(current => current?.fold?.active ? current : null)
     }).then((u) => unlistens.push(u))
 
     return () => {
@@ -61,7 +62,7 @@ export function Overlay() {
     }
   }, [])
 
-  const items = visibleItems(show, show?.coach ? 3 : cfg.top_n)
+  const items = visibleItems(show, show?.coach || show?.fold?.active ? 3 : cfg.top_n)
   const close = () => { void invoke('set_overlay_enabled', { enabled: false }).catch(() => {}) }
 
   const changeAutoplay = async (enabled: boolean) => {

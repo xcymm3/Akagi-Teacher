@@ -157,3 +157,13 @@ func TestLastWallDoesNotCertifyTemporarySafety(t *testing.T) {
 		t.Fatal("own genbutsu must remain")
 	}
 }
+
+func TestRiskOnlyMatchesFullRiskWithoutOffensiveSearch(t *testing.T) {
+	in := fixture(t)
+	full := analyze(in)
+	in.RiskOnly = true
+	got := analyze(in)
+	if len(got.Ranked) != 0 || !reflect.DeepEqual(got.Opponents, full.Opponents) {
+		t.Fatal("risk-only path must return the same risk matrix without ranking discards")
+	}
+}

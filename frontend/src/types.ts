@@ -47,7 +47,10 @@ export type ShowMeta = {
   items: ShowItem[]
   /** Immutable local decision context; optional, never used to select actions. */
   coach?: CoachRequest
+  fold?: FoldDecision
 }
+
+export type FoldDecision = { active: boolean; reason: string; action: MjaiEvent; fallback: boolean; risk: number | null }
 
 export type CoachRequest = { snapshot: GameStateSnapshot; actions: MjaiEvent[]; events?: MjaiEvent[] }
 export type CandidateFacts = {

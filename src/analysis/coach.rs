@@ -44,7 +44,7 @@ pub struct CoachFacts {
 
 /// Count unseen copies from public information, including our own river and
 /// kita, without double-counting called discards. Unseen != live-wall copies.
-fn unseen(snap: &GameStateSnapshot, seat: u8) -> [u8; 34] {
+pub(super) fn unseen(snap: &GameStateSnapshot, seat: u8) -> [u8; 34] {
     let mut left = [4u8; 34];
     let mut remove = |s: &str| {
         if let Some(t) = Tile34::from_mjai(s) {
@@ -480,4 +480,15 @@ async fn run_helper(input: serde_json::Value) -> Result<serde_json::Value, Strin
         return Err("Go analysis failed".into());
     }
     serde_json::from_slice(&bytes).map_err(|e| e.to_string())
+}
+
+/// Fold control needs the 34-tile risk matrix, not an offensive hand search.
+pub async fn defence_risks(
+    snapshot: &GameStateSnapshot,
+    events: &[MjaiEvent],
+) -> Result<serde_json::Value, String> {
+    let seat = snapshot.our_seat.ok_or("missing decision seat")?;
+    run_helper(serde_json::json!({ "snapshot": snapshot, "events": events,
+        "actions": [], "risk_only": true, "left": unseen(snapshot, seat).to_vec() }))
+    .await
 }

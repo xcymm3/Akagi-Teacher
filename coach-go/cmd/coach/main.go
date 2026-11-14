@@ -48,6 +48,7 @@ type Action struct {
 	Consumed []string
 }
 type Input struct {
+	RiskOnly bool `json:"risk_only"`
 	Snapshot Snapshot
 	Actions  []Action
 	Events   []Action
@@ -425,6 +426,9 @@ func analyze(in Input) Output {
 	}
 	out.Preferred = -1
 	out.Opponents = risks(in)
+	if in.RiskOnly {
+		return out
+	}
 	evaluated := map[int]*util.Hand14AnalysisResult{}
 	pi := player(s, seat, in.Left)
 	count := util.CountOfTiles34(pi.HandTiles34)

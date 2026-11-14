@@ -219,7 +219,29 @@ impl AutoplayManager {
             (our_seat, legal_actions, snapshot, num_players)
         };
 
-        if let Some(request) = super::teacher::request(&resp) {
+        let fold = resp.meta.as_ref().and_then(|m| m.pointer("/show/fold"));
+        if fold.and_then(|f| f.get("active")).and_then(|v| v.as_bool()) == Some(true) {
+            let bound = fold.and_then(|f| f.get("snapshot")).cloned().and_then(|v| {
+                serde_json::from_value::<crate::game_state::snapshot::GameStateSnapshot>(v).ok()
+            });
+            let Some(bound) = bound else {
+                return;
+            };
+            if bound.kyoku != snapshot.kyoku
+                || bound.bakaze != snapshot.bakaze
+                || bound.honba != snapshot.honba
+                || bound.phase != snapshot.phase
+                || bound.turn_count != snapshot.turn_count
+                || bound.current_player != snapshot.current_player
+                || bound.players.get(our_seat as usize).map(|p| &p.tehai)
+                    != snapshot.players.get(our_seat as usize).map(|p| &p.tehai)
+            {
+                warn!("autoplay: stale fold decision; skipping action");
+                return;
+            }
+            // Native fold control has already selected from the full legal set.
+            // Never run the 60% arbitration over this defensive decision.
+        } else if let Some(request) = super::teacher::request(&resp) {
             let bound = &request.snapshot;
             if bound.kyoku != snapshot.kyoku
                 || bound.bakaze != snapshot.bakaze

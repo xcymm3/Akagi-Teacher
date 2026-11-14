@@ -1,11 +1,11 @@
-import { fireEvent, render, screen, waitFor } from '@testing-library/react'
+import { act, fireEvent, render, screen, waitFor } from '@testing-library/react'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { Overlay } from './Overlay'
 
 const { invoke, listen } = vi.hoisted(() => ({ invoke: vi.fn(), listen: vi.fn() }))
 vi.mock('@/lib/tauri', () => ({ invoke, listen }))
 vi.mock('react-i18next', () => ({ useTranslation: () => ({ t: (key: string) => key }) }))
-vi.mock('@/components/BotShowList', () => ({ BotShowList: () => <div>候选</div> }))
+vi.mock('@/components/BotShowList', () => ({ BotShowList: ({ show }: { show?: { fold?: { active: boolean } } }) => <div>{show?.fold?.active ? '弃和测试' : '候选'}</div> }))
 
 describe('overlay autoplay shortcut', () => {
   beforeEach(() => {
@@ -39,4 +39,17 @@ describe('overlay autoplay shortcut', () => {
     expect(screen.getByRole('switch').getAttribute('aria-checked')).toBe('false')
     expect(screen.queryByRole('alertdialog')).toBeNull()
   })
+  it('keeps fold feedback at hand end and clears it at the next hand start', async () => {
+    const callbacks = new Map<string, (value: unknown) => void>()
+    listen.mockImplementation((name: string, callback: (value: unknown) => void) => { callbacks.set(name, callback); return Promise.resolve(() => {}) })
+    render(<Overlay />)
+    await waitFor(() => expect((screen.getByRole('switch') as HTMLButtonElement).disabled).toBe(false))
+    act(() => callbacks.get('bot-response')?.({meta:{show:{items:[{label:'Discard',pais:['9p'],value:'60%'}],fold:{active:true}}}}))
+    expect(screen.getByText('弃和测试')).toBeDefined()
+    act(() => callbacks.get('mjai-event')?.({type:'end_kyoku'}))
+    expect(screen.getByText('弃和测试')).toBeDefined()
+    act(() => callbacks.get('mjai-event')?.({type:'start_kyoku'}))
+    expect(screen.queryByText('弃和测试')).toBeNull()
+  })
+
 })

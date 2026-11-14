@@ -1,6 +1,7 @@
 import type { RefObject } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useCoach } from '@/hooks/useCoach'
+import { foldSummary, actionLabel } from '@/lib/fold'
 import { formatCoach } from '@/lib/coach'
 import { Mahgen } from '@/components/Mahgen'
 import { hexToRgba } from '@/lib/botShow'
@@ -23,11 +24,18 @@ export function BotShowList({ items, show, containerRef, variant = 'tile', class
   const overlay = variant === 'overlay'
   const { i18n } = useTranslation()
   const zh = i18n.language.startsWith('zh')
-  const coach = useCoach(show ?? null)
+  const folding = show?.fold?.active ? show.fold : null
+  const coach = useCoach(folding ? null : show ?? null)
   const text = coach.facts ? formatCoach(coach.facts, i18n.language) : null
+
+  const summary = folding ? foldSummary(folding, zh) : text?.summary
 
   return (
     <div className={cn('flex flex-col gap-1.5')}>
+    {folding && <div role="status" className="rounded border border-amber-500/50 bg-amber-500/10 px-2 py-1 text-xs text-amber-500">
+      <p><strong>{zh ? '弃和中' : 'Folding'}</strong> · {folding.reason}</p>
+      <p role="note"><strong>{zh ? '局面解读：' : 'Hand analysis: '}</strong>{summary}</p>
+    </div>}
     {coach.available && !overlay && <p className="text-[11px] text-muted-foreground">
       {zh ? '百分比为模型偏好' : 'Percentages are model preferences'}
     </p>}
@@ -60,9 +68,9 @@ export function BotShowList({ items, show, containerRef, variant = 'tile', class
               />
             )}
             <div className={cn("flex min-w-0 flex-col", overlay ? "w-[68px] shrink-0" : "flex-1")}>
-              {(text?.labels[i] || it.label) && (
+              {(text?.labels[i] || it.label || folding) && (
                 <span className="flex min-w-0 items-center gap-1">
-                  <span className="truncate text-sm text-foreground">{text?.labels[i] ?? it.label}</span>
+                  <span className="truncate text-sm text-foreground">{folding && show?.coach?.actions[i] ? actionLabel(show.coach.actions[i], zh) : text?.labels[i] ?? it.label}</span>
                   {text?.markers[i]?.length ? <span className="flex shrink-0 gap-1 text-xs font-semibold">
                     {text.markers[i].map(marker => <span key={marker} className="rounded bg-muted px-1" title={zh ? '对所列对手的现物或同巡安全牌；同巡信息可能在摸牌或鸣牌后失效' : 'Genbutsu or a passed tile against the listed players; temporary safety expires after a draw or call'}>{marker}</span>)}
                   </span> : null}
@@ -75,6 +83,7 @@ export function BotShowList({ items, show, containerRef, variant = 'tile', class
             {overlay && coach.available && i < 3 && <p title={[text?.reasons[i], text?.details[i]].filter(Boolean).join('\n')} className="min-w-0 flex-1 whitespace-normal break-words text-xs leading-snug text-foreground/90">
               {text?.reasons[i] ?? (coach.pending ? (zh ? '分析中…' : 'Analyzing…') : '')}
             </p>}
+            {folding && <span className="min-w-0 flex-1" />}
             {it.value && (
               <div className={cn("flex shrink-0 flex-col items-end gap-0.5", overlay && "w-10")}>
               <span
@@ -96,8 +105,8 @@ export function BotShowList({ items, show, containerRef, variant = 'tile', class
         )
       })}
     </ol>
-    {text?.summary && <div className="rounded-md border border-border bg-muted/30 px-2 py-1 text-xs leading-snug" role="note">
-      <strong>{zh ? '局面解读：' : 'Hand analysis: '}</strong>{text.summary}
+    {!folding && summary && <div className="rounded-md border border-border bg-muted/30 px-2 py-1 text-xs leading-snug" role="note">
+      <strong>{zh ? '局面解读：' : 'Hand analysis: '}</strong>{summary}
 
     </div>}
     </div>

@@ -43,4 +43,17 @@ describe('shared dashboard/overlay coaching view', () => {
     expect(screen.getByText(/暂无法取得解释/)).toBeDefined()
     expect(screen.queryByRole('note')).toBeNull()
   })
+  it('fold mode preserves model rows but replaces the summary with a fourth discard', () => {
+    useCoach.mockReturnValue({ available: false, pending: false, facts: null })
+    const show = { items, fold: { active: true, reason: 'A：对手立直，进入时2向听',
+      action: { type: 'dahai', actor: 0, pai: '9m', tsumogiri: false }, fallback: false, risk: 0 } } as ShowMeta
+    render(<BotShowList items={items} show={show} variant="overlay" />)
+    expect(screen.getByRole('status').textContent).toContain('弃和中')
+    expect(screen.getByRole('note').textContent).toContain('建议弃和，危险度最低：9万')
+    expect(screen.getAllByRole('listitem')).toHaveLength(3)
+    expect(screen.getAllByText('40%')).toHaveLength(2)
+    expect(screen.getByText('20%')).toBeDefined()
+    expect(useCoach).toHaveBeenLastCalledWith(null)
+  })
+
 })

@@ -178,7 +178,11 @@ struct ApiSession {
     react_timeout_ms: u32,
 }
 
+use riichienv_core::state::legal_actions::GameStateLegalActions;
+use riichienv_core::state_3p::legal_actions::GameState3PLegalActions;
+
 pub struct NativeBot {
+    fold: crate::analysis::fold::FoldState,
     engine: Engine,
     seat: u8,
     num_players: u8,
@@ -221,6 +225,7 @@ impl NativeBot {
             num_players,
             config,
             stream: Vec::new(),
+            fold: Default::default(),
             notify_tx,
             api: None,
             api_failed: None,
@@ -367,6 +372,12 @@ impl NativeBot {
     /// Append one event to the current-kyoku stream, resetting on boundaries so
     /// each request stays small (a kyoku is well under the API's 512-event cap).
     fn accumulate(&mut self, ev: &MjaiEvent) {
+        if matches!(
+            ev,
+            MjaiEvent::StartGame { .. } | MjaiEvent::StartKyoku { .. }
+        ) {
+            self.fold.reset();
+        }
         match ev {
             MjaiEvent::StartGame { .. } => {
                 self.stream.clear();
@@ -553,6 +564,18 @@ impl BotRunner for NativeBot {
             if let Some(ri) = convert::to_riichienv(ev)? {
                 self.engine.feed(ri);
             }
+            // Evaluate every replayed event as well as the final decision:
+            // a reconnect/batched turn must not forget an earlier fold trigger.
+            let snapshot = self.engine.inspect_state(
+                |s| crate::game_state::snapshot::GameStateSnapshot::from_state(s, Some(self.seat)),
+                |s| {
+                    crate::game_state::snapshot::GameStateSnapshot::from_state_3p(
+                        s,
+                        Some(self.seat),
+                    )
+                },
+            );
+            self.fold.observe(&snapshot);
         }
 
         // These events close or postpone a decision; they do not open one.
@@ -595,23 +618,56 @@ impl BotRunner for NativeBot {
         // riichi) has only one possible answer, so asking the server would
         // spend a metered API call to learn nothing. Answer it locally.
         let use_api = self.api.is_some() && self.breaker.allows() && !local.forced;
-        let (action, mut meta) = if use_api {
+        let (mut action, mut meta) = if use_api {
             self.remote_decision(&local).await
         } else {
             local_reply(&local, self.seat)
         };
-        // Capture the state owned by THIS decision, not the independently
-        // advancing tracker/cache. Expensive coaching is requested by the UI
-        // later on a blocking worker; autoplay may reuse it for arbitration.
+        // The snapshot and full legal set belong to this exact inference.
+        let snapshot = self.engine.inspect_state(
+            |s| crate::game_state::snapshot::GameStateSnapshot::from_state(s, Some(self.seat)),
+            |s| crate::game_state::snapshot::GameStateSnapshot::from_state_3p(s, Some(self.seat)),
+        );
+        self.fold.observe(&snapshot);
+        let seat = self.seat;
+        let legal = self.engine.inspect_state(
+            |s| {
+                crate::analysis::fold::defensive_actions(
+                    s._get_legal_actions_internal(seat),
+                    seat,
+                    s.drawn_tile,
+                    s.last_discard.map(|(p, _)| p),
+                )
+            },
+            |s| {
+                crate::analysis::fold::defensive_actions(
+                    s._get_legal_actions_internal(seat),
+                    seat,
+                    s.drawn_tile,
+                    s.last_discard.map(|(p, _)| p),
+                )
+            },
+        );
+        let folded = self.fold.decide(&snapshot, &self.stream, &legal).await;
+        if let Some(ref fold) = folded {
+            action = fold.action.clone();
+            if meta.is_none() {
+                meta = build_show_meta(&local.candidates);
+            }
+        }
         if let Some(show) = meta.as_mut().and_then(|m| m.get_mut("show")) {
             if show.get("title").and_then(Value::as_str) == Some(SHOW_TITLE_LOCAL) {
-                let snapshot = self.engine.inspect_state(
-                    |s| crate::game_state::snapshot::GameStateSnapshot::from_state(s, Some(self.seat)),
-                    |s| crate::game_state::snapshot::GameStateSnapshot::from_state_3p(s, Some(self.seat)),
-                );
-                let actions: Vec<_> = local.candidates.iter().take(3)
-                    .map(|(a, _)| bot_action_to_mjai(a.clone(), self.seat)).collect();
+                let actions: Vec<_> = local
+                    .candidates
+                    .iter()
+                    .take(3)
+                    .map(|(a, _)| bot_action_to_mjai(a.clone(), self.seat))
+                    .collect();
                 show["coach"] = serde_json::json!({ "snapshot": snapshot, "actions": actions, "events": self.stream });
+            }
+            if let Some(fold) = folded {
+                show["fold"] = serde_json::to_value(fold)?;
+                show["fold"]["snapshot"] = serde_json::to_value(&snapshot)?;
             }
         }
         Ok(BotResponse { action, meta })
@@ -619,6 +675,7 @@ impl BotRunner for NativeBot {
 
     async fn reset(&mut self) -> Result<()> {
         self.engine.reset();
+        self.fold.reset();
         self.stream.clear();
         self.breaker.reset();
         Ok(())
@@ -2226,5 +2283,44 @@ mod tests {
         // still healthy: silent.
         bot.record_health(true, None);
         assert!(rx.try_recv().is_err());
+    }
+    #[tokio::test]
+    async fn fold_controls_action_preserves_policy_rows_and_resets_next_kyoku() {
+        let mut bot = bot_with(cfg_off(), crate::event_bus::notify_bus()).await;
+        let hand = [
+            "1m", "1m", "3m", "5m", "7m", "9m", "2p", "4p", "6p", "8p", "1s", "3s", "5s",
+        ];
+        let events = vec![
+            start_game_4p(0),
+            start_kyoku_4p_hidden(hand),
+            MjaiEvent::Reach {
+                actor: 1,
+                pai: None,
+            },
+            MjaiEvent::Dahai {
+                actor: 1,
+                pai: "9s".into(),
+                tsumogiri: true,
+            },
+            MjaiEvent::ReachAccepted { actor: 1 },
+            MjaiEvent::Tsumo {
+                actor: 0,
+                pai: "5p".into(),
+            },
+        ];
+        let response = bot.react(&events).await.unwrap();
+        let show = &response.meta.as_ref().unwrap()["show"];
+        assert_eq!(show["fold"]["active"], true);
+        assert_eq!(
+            show["fold"]["action"],
+            serde_json::to_value(&response.action).unwrap()
+        );
+        let local = bot.engine.decide().unwrap().unwrap();
+        let original = build_show_meta(&local.candidates).unwrap();
+        assert_eq!(show["items"], original["show"]["items"]);
+        bot.accumulate(&MjaiEvent::EndKyoku);
+        assert!(bot.fold.active());
+        bot.accumulate(&start_kyoku_4p());
+        assert!(!bot.fold.active());
     }
 }
