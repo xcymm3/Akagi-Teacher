@@ -181,8 +181,7 @@ pub async fn update_config(
     }
 
     start_autoplay_manager(autoplay_now_enabled, &state);
-    use tauri::Emitter;
-    let _ = app.emit("autoplay-config", autoplay_now_enabled);
+    let _ = crate::ipc::emit_shell(&app, "autoplay-config", &autoplay_now_enabled);
     Ok(())
 }
 
@@ -207,6 +206,31 @@ pub async fn set_overlay_enabled(
     persist_config(&cfg, &state.config_path).map_err(|e| e.to_string())?;
     overlay::reconcile(&app, &cfg.overlay);
     Ok(())
+}
+
+/// Layout comes from the trusted shell, in logical CSS pixels.
+#[tauri::command]
+pub async fn sync_embedded_game(
+    app: AppHandle,
+    webview: tauri::Webview,
+    bounds: crate::capture::embedded::Bounds,
+) -> CmdResult<()> {
+    if webview.label() != "main" {
+        return Err("untrusted webview".into());
+    }
+    crate::capture::embedded::sync_child(&app, bounds).map_err(|e| e.to_string())
+}
+
+#[tauri::command]
+pub async fn reload_embedded_game(app: AppHandle, webview: tauri::Webview) -> CmdResult<()> {
+    use tauri::Manager;
+    if webview.label() != "main" {
+        return Err("untrusted webview".into());
+    }
+    app.get_webview(crate::capture::embedded::LABEL)
+        .ok_or("雀魂页面尚未打开")?
+        .eval("window.location.reload()")
+        .map_err(|e| e.to_string())
 }
 
 /// Resize only the calling overlay, retaining its width and position.
@@ -280,8 +304,7 @@ pub async fn set_autoplay_enabled(
         *guard = next;
     }
     start_autoplay_manager(enabled, &state);
-    use tauri::Emitter;
-    let _ = app.emit("autoplay-config", enabled);
+    let _ = crate::ipc::emit_shell(&app, "autoplay-config", &enabled);
     Ok(())
 }
 
@@ -1801,6 +1824,8 @@ macro_rules! ipc_handlers {
     () => {
         ::tauri::generate_handler![
             $crate::ipc::commands::get_config,
+            $crate::ipc::commands::sync_embedded_game,
+            $crate::ipc::commands::reload_embedded_game,
             $crate::ipc::commands::get_teacher_version,
             $crate::ipc::commands::update_config,
             $crate::ipc::commands::set_overlay_enabled,

@@ -2,7 +2,7 @@
 
 ## Akagi Teacher
 
-This fork adds local explanations for the native model's top three candidates and an attack/defence summary, without changing model weights or candidate ranking.
+This fork adds a Windows game room with Mahjong Soul embedded on the left, teacher explanations for the model's top three candidates on the upper right, and game history below. It also adds persistent folding and flush-threat defence. Model candidate rankings and probabilities remain intact; defensive autoplay is controlled separately. See the Chinese usage guide for the current model and rules.
 
 [Download the Windows x64 teacher build](https://github.com/xcymm3/Akagi-Teacher/releases/latest) · [中文使用说明](docs/teacher-windows-usage.zh-CN.md)
 

@@ -144,6 +144,7 @@ impl CaptureBackend for ChromiumBackend {
             ctx.http.clone(),
             ctx.notify_bus.clone(),
             self.cfg.block_telemetry,
+            None,
         );
         let mut cdp_fut = Box::pin(cdp_run);
         let shutdown_fut = shutdown.wait();

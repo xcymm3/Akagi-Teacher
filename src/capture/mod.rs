@@ -11,6 +11,7 @@
 //! into the platform bridge, which emits mjai events on [`crate::event_bus::MjaiBus`].
 
 pub mod chromium;
+pub mod embedded;
 pub mod flow;
 pub mod http;
 pub mod hudsucker_backend;

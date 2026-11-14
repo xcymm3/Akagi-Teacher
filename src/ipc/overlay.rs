@@ -20,8 +20,7 @@
 
 use crate::config::OverlayConfig;
 use tauri::{
-    AppHandle, Emitter, LogicalSize, Manager, Runtime, WebviewUrl, WebviewWindow,
-    WebviewWindowBuilder,
+    AppHandle, LogicalSize, Manager, Runtime, WebviewUrl, WebviewWindow, WebviewWindowBuilder,
 };
 use tauri_plugin_window_state::{StateFlags, WindowExt};
 use tracing::{info, warn};
@@ -137,7 +136,7 @@ fn apply<R: Runtime>(app: &AppHandle<R>, cfg: &OverlayConfig) {
     // Broadcast, not `emit_to(LABEL, …)`: the overlay needs the new top-N /
     // opacity, and the main window needs it to keep its toggles in sync with an
     // overlay that was closed from its own × button.
-    if let Err(e) = app.emit(CONFIG_EVENT, cfg) {
+    if let Err(e) = crate::ipc::emit_shell(app, CONFIG_EVENT, cfg) {
         warn!("overlay: could not emit {CONFIG_EVENT}: {e}");
     }
 }

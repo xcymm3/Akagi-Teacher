@@ -29,8 +29,19 @@ pub fn run() {
 
     let args = cli::Cli::parse();
     let (mut cfg, config_path) = config::load_config(args.config.as_deref());
-    // Open on every launch; closing applies to the current session.
-    cfg.overlay.enabled = true;
+    // Suggestions live in the game room; the standalone overlay is opt-in.
+    cfg.overlay.enabled = false;
+    if cfg!(target_os = "windows") {
+        cfg.capture.embedded = true;
+        cfg.capture.mode = config::CaptureMode::Chromium;
+        cfg.platform.kind = config::Platform::Majsoul;
+        cfg.proxy.enabled = true;
+        cfg.bot.enabled = true;
+        cfg.general.first_run_completed = true;
+        if let Err(e) = capture::embedded::prepare() {
+            error!("embedded browser setup: {e:#}");
+        }
+    }
 
     let log_dir = util::resolve_dir(&cfg.logging.dir);
     let targets = [
@@ -143,7 +154,15 @@ pub fn run() {
                 .skip_initial_state(ipc::overlay::LABEL)
                 .build(),
         )
-        .invoke_handler(crate::ipc_handlers!())
+        .invoke_handler({
+            let handler: fn(tauri::ipc::Invoke<tauri::Wry>) -> bool = crate::ipc_handlers!();
+            move |invoke: tauri::ipc::Invoke<tauri::Wry>| {
+                if invoke.message.webview().label() == capture::embedded::LABEL {
+                    invoke.resolver.reject("Game pages cannot invoke application commands");
+                    true
+                } else { handler(invoke) }
+            }
+        })
         .setup({
             // AppState constructed *inside* setup() so the python+uv
             // runtime can be located using `resource_dir` — bundled
@@ -188,9 +207,7 @@ pub fn run() {
 
                 ipc::install(app.handle(), state.clone())?;
 
-                // Open the suggestion overlay at every launch. Safe
-                // before any game data exists — it renders its empty state and
-                // fills in on the first `bot-response`.
+                // Keep the accessory overlay closed at startup; the room renders suggestions.
                 ipc::overlay::reconcile(app.handle(), &overlay_cfg);
 
                 // The overlay is an accessory window, not a co-equal one. Tauri
@@ -207,7 +224,7 @@ pub fn run() {
                 // *window*; it deliberately does not touch `overlay.enabled`, so
                 // the overlay comes back on the next launch. Only a deliberate ×
                 // (or the toggle) turns the feature off.
-                if let Some(main) = app.get_webview_window("main") {
+                if let Some(main) = app.get_window("main") {
                     let handle = app.handle().clone();
                     main.on_window_event(move |event| {
                         if matches!(event, tauri::WindowEvent::CloseRequested { .. }) {

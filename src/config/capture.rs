@@ -12,6 +12,8 @@ use serde::{Deserialize, Serialize};
 #[serde(default)]
 pub struct CaptureConfig {
     pub mode: CaptureMode,
+    /// Use the in-window WebView2 game with the existing CDP pipeline.
+    pub embedded: bool,
     pub chromium: ChromiumConfig,
     pub http: HttpCaptureConfig,
 }
@@ -144,6 +146,7 @@ mod tests {
     fn mode_serialises_lowercase() {
         let cfg = CaptureConfig {
             mode: CaptureMode::Chromium,
+            embedded: false,
             chromium: Default::default(),
             http: Default::default(),
         };
@@ -172,6 +175,7 @@ mod tests {
     fn chromium_config_round_trip() {
         let original = CaptureConfig {
             mode: CaptureMode::Chromium,
+            embedded: false,
             chromium: ChromiumConfig {
                 executable: "/opt/chrome/chrome".into(),
                 user_data_dir: "/tmp/profile".into(),

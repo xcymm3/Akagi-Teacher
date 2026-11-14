@@ -85,7 +85,7 @@ pub async fn spawn_capture_supervisor(state: AppState) -> Result<()> {
         }
     }
 
-    let (mode, proxy_cfg, chromium_cfg, http_cfg, platform) = {
+    let (mode, proxy_cfg, chromium_cfg, http_cfg, platform, embedded) = {
         let cfg = state.config.read().await;
         (
             cfg.capture.mode,
@@ -93,6 +93,7 @@ pub async fn spawn_capture_supervisor(state: AppState) -> Result<()> {
             cfg.capture.chromium.clone(),
             cfg.capture.http.clone(),
             cfg.platform.kind,
+            cfg.capture.embedded,
         )
     };
 
@@ -114,6 +115,12 @@ pub async fn spawn_capture_supervisor(state: AppState) -> Result<()> {
                 http_cfg.clone(),
                 force_close,
             ))
+        }
+        CaptureMode::Chromium if embedded && platform == crate::config::Platform::Majsoul => {
+            Box::new(crate::capture::embedded::EmbeddedBackend {
+                block_telemetry: chromium_cfg.block_telemetry,
+                start_url: crate::capture::embedded::start_url(&chromium_cfg.start_url),
+            })
         }
         CaptureMode::Chromium => Box::new(ChromiumBackend::new(chromium_cfg)),
     };

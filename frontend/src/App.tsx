@@ -1,5 +1,6 @@
 import { useEffect } from 'react'
-import { Outlet, useLocation } from 'react-router-dom'
+import { Link, Outlet, useLocation } from 'react-router-dom'
+import { GameRoom } from '@/routes/GameRoom'
 import { Sidebar } from '@/components/sidebar/Sidebar'
 import { NarrowTopBar } from '@/components/sidebar/NarrowTopBar'
 import { Statusbar } from '@/components/Statusbar'
@@ -30,6 +31,12 @@ export default function App() {
     }
   }, [scale])
 
+  if (location.pathname === '/') return <>
+    <GameRoom />
+    <Toaster />
+    <UpdateNotifier />
+  </>
+
   return (
     <>
       <Sidebar />
@@ -49,6 +56,7 @@ export default function App() {
       >
         {/* Below `lg` the sidebar is an off-screen drawer, so this is the
             only navigation entry point. Renders null when docked. */}
+        <div className="shrink-0 border-b border-border px-4 py-2"><Link to="/" className="text-sm hover:underline">← 返回对局</Link></div>
         <NarrowTopBar />
         <div className="flex-1 overflow-auto">
           {/* Keyed by route so a crash on one page doesn't poison the others. */}

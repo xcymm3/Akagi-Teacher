@@ -122,6 +122,7 @@ export type ChromiumConfig = {
 }
 
 export type CaptureConfig = {
+  embedded?: boolean
   mode: CaptureMode
   chromium: ChromiumConfig
 }

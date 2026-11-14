@@ -160,6 +160,14 @@ fn is_autoplay_target_url(ws_url: &str) -> bool {
 /// `block_telemetry` arms the telemetry block on every page attached —
 /// see [`interception_patterns`].
 #[allow(clippy::too_many_arguments)]
+// Abort subscriptions even when a capture restart drops the entire future.
+struct CaptureTask(JoinHandle<()>);
+impl Drop for CaptureTask {
+    fn drop(&mut self) {
+        self.0.abort();
+    }
+}
+
 pub async fn run(
     endpoint: &str,
     bridges: Arc<FlowBridges<FlowKey>>,
@@ -169,6 +177,7 @@ pub async fn run(
     http_cfg: HttpCaptureConfig,
     notify: NotifyBus,
     block_telemetry: bool,
+    game_url: Option<&str>,
 ) -> Result<()> {
     info!("CDP connecting to {endpoint}");
     let (browser_owned, mut handler) = Browser::connect(endpoint)
@@ -182,16 +191,16 @@ pub async fn run(
     // `WS Invalid message` warnings when Chrome sends events
     // chromiumoxide doesn't have a typed binding for; those are
     // non-fatal noise and the stream keeps running.
-    let pump = tokio::spawn(async move {
+    let mut pump = CaptureTask(tokio::spawn(async move {
         while let Some(ev) = handler.next().await {
             if let Err(e) = ev {
                 debug!("chromiumoxide handler event error: {e:?}");
             }
         }
-    });
+    }));
 
     // Per-page subscription registry. Key: TargetId stringified.
-    let mut subscribed: HashMap<String, JoinHandle<()>> = HashMap::new();
+    let mut subscribed: HashMap<String, CaptureTask> = HashMap::new();
 
     let poll_loop = async {
         loop {
@@ -214,7 +223,7 @@ pub async fn run(
             // long sessions where users open + close many tabs.
             for id in &removes {
                 if let Some(h) = subscribed.remove(id) {
-                    h.abort();
+                    h.0.abort();
                     debug!("CDP: dropped subscription for closed target {id}");
                 }
             }
@@ -246,6 +255,19 @@ pub async fn run(
                 if !adds.contains(&id) {
                     continue;
                 }
+                if game_url.is_some() {
+                    let url = page.url().await.ok().flatten().unwrap_or_default();
+                    let is_game = url == crate::capture::embedded::BLANK
+                        || page
+                            .evaluate("window.name === 'akagi-teacher-game'")
+                            .await
+                            .ok()
+                            .and_then(|r| r.value().and_then(|v| v.as_bool()))
+                            .unwrap_or(false);
+                    if !is_game {
+                        continue;
+                    }
+                }
                 match attach_page(
                     page.clone(),
                     id.clone(),
@@ -261,7 +283,14 @@ pub async fn run(
                 {
                     Ok(handle) => {
                         info!("CDP: attached to page target {id}");
-                        subscribed.insert(id, handle);
+                        subscribed.insert(id, CaptureTask(handle));
+                        if let Some(url) = game_url {
+                            // Network listeners are installed before the first
+                            // navigation/reconnect, retaining login/restore frames.
+                            if let Err(e) = page.goto(url).await {
+                                warn!("embedded game navigation failed: {e:#}");
+                            }
+                        }
                     }
                     Err(e) => {
                         warn!("CDP: failed to attach to target {id}: {e:#}");
@@ -277,12 +306,12 @@ pub async fn run(
     };
 
     tokio::select! {
-        _ = pump => info!("CDP handler pump exited"),
+        _ = &mut pump.0 => info!("CDP handler pump exited"),
         _ = poll_loop => info!("CDP page poll exited"),
     }
     // Abort any still-live page subscriptions before tearing down.
     for (_id, h) in subscribed {
-        h.abort();
+        h.0.abort();
     }
     drop(browser);
     Err(anyhow!("CDP loop terminated"))

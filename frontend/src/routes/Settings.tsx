@@ -1190,7 +1190,7 @@ function CaptureCard({
             <SelectContent>
               <SelectItem value="mitm">{t('settings.capture_mitm_option')}</SelectItem>
               <SelectItem value="chromium" disabled={!supportsChromium}>
-                {t('settings.capture_chromium_option')}
+                {draft.capture?.embedded ? '内嵌雀魂（WebView2）' : t('settings.capture_chromium_option')}
               </SelectItem>
             </SelectContent>
           </Select>
@@ -1231,7 +1231,10 @@ function CaptureCard({
           </>
         )}
 
-        {mode === 'chromium' && (
+        {mode === 'chromium' && draft.capture?.embedded && <Field label="雀魂网址" hint="使用官方雀魂游戏网址；修改后会重新连接内嵌页面。">
+          <Input value={chromium.start_url} placeholder="https://game.maj-soul.com/1/" onChange={e => setChromium({start_url:e.target.value})} />
+        </Field>}
+        {mode === 'chromium' && !draft.capture?.embedded && (
           <>
             <Field label={t('settings.browser_executable')} hint={t('settings.browser_executable_hint')}>
               <Input

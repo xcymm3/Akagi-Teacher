@@ -52,6 +52,18 @@ use tauri::{AppHandle, Emitter, Manager, Runtime};
 use tokio::sync::broadcast;
 use tracing::warn;
 
+/// Send application data only to trusted UI webviews, never to the game.
+pub(crate) fn emit_shell<R: Runtime, T: serde::Serialize + ?Sized>(
+    app: &AppHandle<R>,
+    event: &str,
+    payload: &T,
+) -> tauri::Result<()> {
+    for label in ["main", "overlay", "debug"] {
+        app.emit_to(tauri::EventTarget::webview(label), event, payload)?;
+    }
+    Ok(())
+}
+
 /// Manage `state` on the Tauri app and spawn the five forwarder tasks.
 /// Call from inside the builder's `.setup` closure.
 pub fn install<R: Runtime>(app: &AppHandle<R>, state: AppState) -> Result<()> {
@@ -95,7 +107,7 @@ where
         loop {
             match rx.recv().await {
                 Ok(payload) => {
-                    if let Err(e) = app.emit(event, &payload) {
+                    if let Err(e) = emit_shell(&app, event, &payload) {
                         warn!("ipc emit {event} failed: {e}");
                     }
                 }
@@ -116,7 +128,7 @@ fn spawn_bot_status_forwarder<R: Runtime>(app: AppHandle<R>, state: AppState) {
             match rx.recv().await {
                 Ok(s) => {
                     *snapshot.write().await = s.clone();
-                    if let Err(e) = app.emit("bot-status", &s) {
+                    if let Err(e) = emit_shell(&app, "bot-status", &s) {
                         warn!("ipc emit bot-status failed: {e}");
                     }
                 }
@@ -137,7 +149,7 @@ fn spawn_capture_status_forwarder<R: Runtime>(app: AppHandle<R>, state: AppState
             match rx.recv().await {
                 Ok(s) => {
                     control.lock().await.status = s.clone();
-                    if let Err(e) = app.emit("capture-status", &s) {
+                    if let Err(e) = emit_shell(&app, "capture-status", &s) {
                         warn!("ipc emit capture-status failed: {e}");
                     }
                 }
