@@ -33,8 +33,7 @@ export function BotShowList({ items, show, containerRef, variant = 'tile', class
   return (
     <div className={cn('flex flex-col gap-1.5')}>
     {folding && <div role="status" className="rounded border border-amber-500/50 bg-amber-500/10 px-2 py-1 text-xs text-amber-500">
-      <p><strong>{zh ? '弃和中' : 'Folding'}</strong> · {folding.reason}</p>
-      <p role="note"><strong>{zh ? '局面解读：' : 'Hand analysis: '}</strong>{summary}</p>
+      <p><strong>{zh ? '弃和中' : 'Folding'}</strong> · {folding.reason.replace(/^[ABC][：:]\s*/, '')}</p>
     </div>}
     {coach.available && !overlay && <p className="text-[11px] text-muted-foreground">
       {zh ? '百分比为模型偏好' : 'Percentages are model preferences'}
@@ -105,7 +104,7 @@ export function BotShowList({ items, show, containerRef, variant = 'tile', class
         )
       })}
     </ol>
-    {!folding && summary && <div className="rounded-md border border-border bg-muted/30 px-2 py-1 text-xs leading-snug" role="note">
+    {summary && <div className="rounded-md border border-border bg-muted/30 px-2 py-1 text-xs leading-snug" role="note">
       <strong>{zh ? '局面解读：' : 'Hand analysis: '}</strong>{summary}
 
     </div>}

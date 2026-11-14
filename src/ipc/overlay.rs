@@ -41,21 +41,16 @@ const RESTORE_FLAGS: StateFlags = StateFlags::POSITION;
 
 const DEFAULT_WIDTH: f64 = 520.0;
 const MIN_WIDTH: f64 = 320.0;
+const MIN_HEIGHT: f64 = 80.0;
 
 // Fixed-size compact rows keep tile sizing independent of the window height.
 /// Title bar, card border, and the padding around the list.
 const CHROME_HEIGHT: f64 = 84.0;
-/// Below this a row can no longer fit a legible tile next to its label.
-const MIN_ROW_HEIGHT: f64 = 34.0;
 /// Roomy enough that the tile is worth glancing at without leaning in.
 const DEFAULT_ROW_HEIGHT: f64 = 48.0;
 
 fn default_height(top_n: usize) -> f64 {
     CHROME_HEIGHT + top_n as f64 * DEFAULT_ROW_HEIGHT
-}
-
-fn min_height(top_n: usize) -> f64 {
-    CHROME_HEIGHT + top_n as f64 * MIN_ROW_HEIGHT
 }
 
 pub fn get<R: Runtime>(app: &AppHandle<R>) -> Option<WebviewWindow<R>> {
@@ -68,10 +63,8 @@ pub fn open<R: Runtime>(app: &AppHandle<R>, cfg: &OverlayConfig) -> tauri::Resul
 
     if let Some(w) = get(app) {
         w.set_always_on_top(cfg.always_on_top)?;
-        // Raising `top_n` in Settings adds rows to a window that may already be
-        // at its old floor, so the floor has to move with it — otherwise the new
-        // rows just squeeze the existing ones.
-        w.set_min_size(Some(LogicalSize::new(MIN_WIDTH, min_height(rows))))?;
+        // The frontend measures natural content and fits height after changes.
+        w.set_min_size(Some(LogicalSize::new(MIN_WIDTH, MIN_HEIGHT)))?;
         w.show()?;
         return Ok(());
     }
@@ -79,7 +72,7 @@ pub fn open<R: Runtime>(app: &AppHandle<R>, cfg: &OverlayConfig) -> tauri::Resul
     let w = WebviewWindowBuilder::new(app, LABEL, WebviewUrl::App("index.html".into()))
         .title("Akagi Overlay")
         .inner_size(DEFAULT_WIDTH, default_height(rows))
-        .min_inner_size(MIN_WIDTH, min_height(rows))
+        .min_inner_size(MIN_WIDTH, MIN_HEIGHT)
         .decorations(false)
         .transparent(true)
         .always_on_top(cfg.always_on_top)
@@ -154,42 +147,11 @@ mod tests {
     use super::*;
     use crate::config::{TOP_N_MAX, TOP_N_MIN};
 
-    /// The rows split the window's height, so a window sized for three rows
-    /// squashes five into an unreadable smear. Both the starting height and the
-    /// floor have to grow with `top_n` — a fixed height is the bug this replaced.
     #[test]
-    fn window_height_grows_with_the_row_count() {
+    fn initial_height_grows_but_floor_allows_content_to_shrink() {
         for n in TOP_N_MIN..TOP_N_MAX {
-            assert!(
-                min_height(n + 1) > min_height(n),
-                "floor must rise from {n} to {} rows",
-                n + 1
-            );
-            assert!(
-                default_height(n + 1) > default_height(n),
-                "starting height must rise from {n} to {} rows",
-                n + 1
-            );
-        }
-    }
-
-    /// Every row must clear `MIN_ROW_HEIGHT` at the floor, at any `top_n` —
-    /// that is what keeps a legible tile next to its label.
-    #[test]
-    fn floor_leaves_every_row_its_minimum() {
-        for n in TOP_N_MIN..=TOP_N_MAX {
-            let per_row = (min_height(n) - CHROME_HEIGHT) / n as f64;
-            assert!(
-                per_row >= MIN_ROW_HEIGHT,
-                "{n} rows get {per_row}px each, below the {MIN_ROW_HEIGHT}px minimum"
-            );
-        }
-    }
-
-    #[test]
-    fn the_starting_height_is_roomier_than_the_floor() {
-        for n in TOP_N_MIN..=TOP_N_MAX {
-            assert!(default_height(n) > min_height(n));
+            assert!(default_height(n + 1) > default_height(n));
+            assert!(default_height(n) > MIN_HEIGHT);
         }
     }
 }

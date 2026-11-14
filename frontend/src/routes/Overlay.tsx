@@ -1,13 +1,14 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { GripHorizontal, X } from 'lucide-react'
 import { BotShowList } from '@/components/BotShowList'
 import { pickShow, visibleItems } from '@/lib/botShow'
 import { invoke, listen } from '@/lib/tauri'
+import { useOverlayHeight } from '@/hooks/useOverlayHeight'
 import type { AppConfig, BotResponse, MjaiEvent, OverlayConfig, ShowMeta } from '@/types'
 
 // Compact suggestion window. Only the title bar is a drag region; controls
-// and the scrolling analysis body remain interactive.
+// and the content body remain interactive. Height follows natural content.
 
 // Only used if `get_config` fails — a blank overlay would be worse than a
 // default-looking one. Mirrors `OverlayConfig::default()`.
@@ -19,6 +20,8 @@ const FALLBACK: OverlayConfig = {
 }
 
 export function Overlay() {
+  const contentRef = useRef<HTMLDivElement>(null)
+  useOverlayHeight(contentRef)
   const { t } = useTranslation()
   const [show, setShow] = useState<ShowMeta | null>(null)
   const [autoplay, setAutoplay] = useState(false)
@@ -76,8 +79,8 @@ export function Overlay() {
   }
 
   return (
-    <div className="h-screen w-screen overflow-hidden p-1 select-none">
-      <div className="flex h-full w-full flex-col overflow-hidden rounded-lg border border-border bg-background shadow-lg" style={{ opacity: cfg.opacity }}>
+    <div ref={contentRef} className="w-full p-1 select-none">
+      <div className="flex w-full flex-col rounded-lg border border-border bg-background shadow-lg" style={{ opacity: cfg.opacity }}>
         <header data-tauri-drag-region className="flex h-10 shrink-0 items-center gap-2 border-b border-border bg-muted/80 px-2 cursor-grab active:cursor-grabbing">
           <GripHorizontal className="size-4 pointer-events-none text-muted-foreground" />
           <span data-tauri-drag-region className="flex h-full min-w-0 flex-1 items-center truncate text-xs font-semibold">
@@ -97,7 +100,7 @@ export function Overlay() {
           </button>
         </header>
         {error && <p role="alert" className="shrink-0 px-2 py-1 text-xs text-red-500">{error}</p>}
-        <div className="min-h-0 flex-1 overflow-y-auto [scrollbar-gutter:stable] px-1.5 py-1.5">
+        <div className="px-1.5 py-1.5">
           {items.length === 0 ? <span className="px-1 text-xs text-muted-foreground">{t('overlay.empty')}</span>
             : <BotShowList items={items} show={show} variant="overlay" />}
         </div>

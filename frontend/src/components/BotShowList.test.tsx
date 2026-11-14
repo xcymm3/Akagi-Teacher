@@ -49,7 +49,12 @@ describe('shared dashboard/overlay coaching view', () => {
       action: { type: 'dahai', actor: 0, pai: '9m', tsumogiri: false }, fallback: false, risk: 0 } } as ShowMeta
     render(<BotShowList items={items} show={show} variant="overlay" />)
     expect(screen.getByRole('status').textContent).toContain('弃和中')
+    expect(screen.getByRole('status').textContent).toContain('对手立直，进入时2向听')
+    expect(screen.getByRole('status').textContent).not.toContain('A：')
+    expect(screen.getByRole('status').textContent).not.toContain('局面解读')
     expect(screen.getByRole('note').textContent).toContain('建议弃和，危险度最低：9万')
+    // Summary must follow the full candidate list in both normal and fold mode.
+    expect(screen.getByRole('list').nextElementSibling).toBe(screen.getByRole('note'))
     expect(screen.getAllByRole('listitem')).toHaveLength(3)
     expect(screen.getAllByText('40%')).toHaveLength(2)
     expect(screen.getByText('20%')).toBeDefined()

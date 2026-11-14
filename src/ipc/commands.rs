@@ -209,6 +209,23 @@ pub async fn set_overlay_enabled(
     Ok(())
 }
 
+/// Resize only the calling overlay, retaining its width and position.
+#[tauri::command]
+pub async fn fit_overlay_height(window: tauri::WebviewWindow, height: f64) -> CmdResult<()> {
+    if window.label() != overlay::LABEL || !height.is_finite() || height <= 0.0 {
+        return Err("invalid overlay height request".into());
+    }
+    let scale = window.scale_factor().map_err(|e| e.to_string())?;
+    let size = window.inner_size().map_err(|e| e.to_string())?;
+    let target = (height.max(80.0) * scale).ceil() as u32;
+    if size.height.abs_diff(target) > 1 {
+        window
+            .set_size(tauri::PhysicalSize::new(size.width, target))
+            .map_err(|e| e.to_string())?;
+    }
+    Ok(())
+}
+
 fn start_autoplay_manager(enabled: bool, state: &AppState) {
     if claim_autoplay_manager_spawn(enabled, &state.autoplay_manager_started) {
         let cfg_for_ap = state.config.clone();
@@ -1787,6 +1804,7 @@ macro_rules! ipc_handlers {
             $crate::ipc::commands::get_teacher_version,
             $crate::ipc::commands::update_config,
             $crate::ipc::commands::set_overlay_enabled,
+            $crate::ipc::commands::fit_overlay_height,
             $crate::ipc::commands::set_autoplay_enabled,
             $crate::ipc::commands::list_bots,
             $crate::ipc::commands::set_active_bot,
