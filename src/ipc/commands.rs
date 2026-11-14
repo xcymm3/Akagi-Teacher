@@ -214,11 +214,18 @@ pub async fn sync_embedded_game(
     app: AppHandle,
     webview: tauri::Webview,
     bounds: crate::capture::embedded::Bounds,
+    state: State<'_, AppState>,
 ) -> CmdResult<()> {
     if webview.label() != "main" {
         return Err("untrusted webview".into());
     }
-    crate::capture::embedded::sync_child(&app, bounds).map_err(|e| e.to_string())
+    crate::capture::embedded::sync_child(&app, bounds).map_err(|e| e.to_string())?;
+    if bounds.visible {
+        // Canvas coordinates belong to the child viewport, which has changed
+        // size. Do not keep the autoplay manager's previous 30-second cache.
+        *state.autoplay_context.canvas_rect.write().await = None;
+    }
+    Ok(())
 }
 
 #[tauri::command]
