@@ -50,7 +50,8 @@ export type ShowMeta = {
   fold?: FoldDecision
 }
 
-export type FoldDecision = { active: boolean; reason: string; action: MjaiEvent; fallback: boolean; risk: number | null }
+export type FlushThreat = { seat: number; suit: 'm' | 'p' | 's'; level: 'watch' | 'suspected' | 'high'; tenpai_reference: number }
+export type FoldDecision = { active: boolean; reason: string; action: MjaiEvent; fallback: boolean; risk: number | null; flush_threats?: FlushThreat[]; snapshot?: GameStateSnapshot }
 
 export type CoachRequest = { snapshot: GameStateSnapshot; actions: MjaiEvent[]; events?: MjaiEvent[] }
 export type CandidateFacts = {

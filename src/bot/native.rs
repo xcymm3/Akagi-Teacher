@@ -575,7 +575,7 @@ impl BotRunner for NativeBot {
                     )
                 },
             );
-            self.fold.observe(&snapshot);
+            self.fold.observe(&snapshot, &self.stream);
         }
 
         // These events close or postpone a decision; they do not open one.
@@ -628,7 +628,7 @@ impl BotRunner for NativeBot {
             |s| crate::game_state::snapshot::GameStateSnapshot::from_state(s, Some(self.seat)),
             |s| crate::game_state::snapshot::GameStateSnapshot::from_state_3p(s, Some(self.seat)),
         );
-        self.fold.observe(&snapshot);
+        self.fold.observe(&snapshot, &self.stream);
         let seat = self.seat;
         let legal = self.engine.inspect_state(
             |s| {

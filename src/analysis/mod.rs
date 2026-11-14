@@ -5,6 +5,7 @@
 pub mod agari_rate;
 pub mod coach;
 pub mod data;
+pub mod flush;
 pub mod fold;
 pub mod hand;
 pub mod improves;
