@@ -27,6 +27,7 @@ pub mod apply;
 pub mod check;
 pub mod error;
 pub mod teacher;
+pub mod transfer;
 
 pub use check::{check_for_update, UpdateInfo};
 pub use error::UpdateError;

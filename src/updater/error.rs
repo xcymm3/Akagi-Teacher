@@ -12,6 +12,8 @@ use std::path::PathBuf;
 #[derive(Debug, thiserror::Error, Serialize, Clone)]
 #[serde(tag = "kind", rename_all = "snake_case")]
 pub enum UpdateError {
+    #[error("更新下载已取消")]
+    Cancelled,
     /// Running on a target triple Akagi doesn't publish a binary for
     /// (e.g. linux/aarch64 today). The UI should suppress the toast
     /// and only surface a "check releases manually" link in Settings.

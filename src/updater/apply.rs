@@ -34,7 +34,21 @@ pub async fn download_and_apply(
     app: &AppHandle,
     info: &UpdateInfo,
     net: &NetworkConfig,
+    control: &super::transfer::ApplyControl,
+    cancelled: &mut tokio::sync::watch::Receiver<u64>,
 ) -> Result<(), UpdateError> {
+    let report = |stage, downloaded, total| {
+        let _ = crate::ipc::emit_shell(
+            app,
+            "update-progress",
+            &super::transfer::UpdateProgress {
+                stage,
+                downloaded,
+                total,
+            },
+        );
+    };
+    report("checking", 0, info.asset_size);
     let teacher_update = info.latest_tag.starts_with("teacher-v");
     if teacher_update {
         validate_teacher_info(info).map_err(UpdateError::from)?;
@@ -64,16 +78,41 @@ pub async fn download_and_apply(
         .tempdir_in(&install_dir)
         .context("create staging dir next to current exe")
         .map_err(UpdateError::from)?;
-    let zip_path = tempdir.path().join("release.zip");
+    let zip_path = tempdir.path().join(if teacher_update {
+        "release.exe"
+    } else {
+        "release.zip"
+    });
 
     let client = build_client().map_err(UpdateError::from)?;
     let zip_candidates = mirror::candidates(net, &info.asset_url);
-    let (zip_source, downloaded_digest) =
-        download_with_fallback(&client, &zip_candidates, &zip_path)
-            .await
-            .map_err(UpdateError::from)?;
+    control.check()?;
+    report("connecting", 0, info.asset_size);
+    let download = async {
+        if teacher_update {
+            let digest = super::transfer::download(
+                &client,
+                &info.asset_url,
+                &zip_path,
+                info.asset_size,
+                |n, t| report("downloading", n, t),
+                super::transfer::Limits::default(),
+            )
+            .await?;
+            Ok::<_, anyhow::Error>((Source::Direct, digest))
+        } else {
+            download_with_fallback(&client, &zip_candidates, &zip_path).await
+        }
+    };
+    let (zip_source, downloaded_digest) = tokio::select! {
+        biased;
+        _=cancelled.changed()=>return Err(UpdateError::Cancelled),
+        result=download=>result.map_err(UpdateError::from)?,
+    };
+    control.check()?;
+    report("verifying", info.asset_size, info.asset_size);
     log_info!(
-        "update zip downloaded via {zip_source:?} ({} bytes expected)",
+        "update asset downloaded via {zip_source:?} ({} bytes expected)",
         info.asset_size
     );
 
@@ -126,7 +165,14 @@ pub async fn download_and_apply(
 
     let new_binary = if teacher_update {
         let binary = tempdir.path().join("akagi-teacher.exe");
-        prepare_teacher_binary(info, &zip_path, &binary).map_err(UpdateError::from)?;
+        let staged = binary.clone();
+        let downloaded = zip_path.clone();
+        let details = info.clone();
+        tokio::task::spawn_blocking(move || prepare_teacher_binary(&details, &downloaded, &staged))
+            .await
+            .context("更新文件校验任务失败")
+            .map_err(UpdateError::from)?
+            .map_err(UpdateError::from)?;
         binary
     } else {
         // Extract the whole zip into a sibling dir, then locate the binary
@@ -164,6 +210,8 @@ pub async fn download_and_apply(
     if teacher_update {
         ensure_game_idle(app).await?;
     }
+    control.commit()?;
+    report("installing", info.asset_size, info.asset_size);
     self_replace::self_replace(&new_binary)
         .context("self_replace::self_replace")
         .map_err(UpdateError::from)?;
@@ -175,19 +223,20 @@ pub async fn download_and_apply(
     // Trigger restart. The call shuts the process down and re-execs the
     // (now swapped) binary, so anything after this point in the source
     // is unreachable.
+    report("restarting", info.asset_size, info.asset_size);
     app.restart();
 }
 
 /// No active round may be interrupted by the updater's restart.
 async fn ensure_game_idle(app: &AppHandle) -> Result<(), UpdateError> {
     let state = app.state::<crate::ipc::AppState>();
-    if state
-        .game_tracker
-        .lock()
-        .await
-        .snapshot()
-        .is_some_and(|s| !s.is_done)
-    {
+    let tracker =
+        tokio::time::timeout(std::time::Duration::from_secs(3), state.game_tracker.lock())
+            .await
+            .map_err(|_| UpdateError::Other {
+                message: "读取牌局状态超时，请稍后重试更新".into(),
+            })?;
+    if tracker.snapshot().is_some_and(|s| !s.is_done) {
         return Err(UpdateError::Other {
             message: "当前牌局尚未结束，请结束牌局后再更新".into(),
         });

@@ -1,6 +1,6 @@
 import { create } from 'zustand'
 import { persist, createJSONStorage } from 'zustand/middleware'
-import { invoke } from '@/lib/tauri'
+import { invoke, listen } from '@/lib/tauri'
 
 /// Mirrors `crate::updater::check::UpdateInfo` on the Rust side. The
 /// shape is fixed by the IPC contract — keep both ends in sync.
@@ -23,7 +23,13 @@ export type UpdateInfo = {
 /// Mirrors `crate::updater::error::UpdateError`. The `kind` tag is what
 /// frontend code switches on to decide between a generic "Update failed"
 /// toast and a fallback that opens the release page.
+export type UpdateProgress = {
+  stage: 'checking' | 'connecting' | 'downloading' | 'verifying' | 'installing' | 'restarting' | 'cancelling' | 'cancelled' | 'failed'
+  downloaded: number
+  total: number
+}
 export type UpdateError =
+  | { kind: 'cancelled' }
   | { kind: 'unsupported_platform' }
   | { kind: 'read_only_install'; path: string }
   | { kind: 'digest_mismatch' }
@@ -53,6 +59,9 @@ type Ephemeral = {
   /// `true` while `apply_update` is in flight. Used to disable the
   /// "Update now" button and show a spinner.
   applying: boolean
+  progress: UpdateProgress | null
+  applyStartedAt: number | null
+  progressAt: number | null
   /// `true` after the auto-check toast has fired this session. Stops
   /// the toast from re-firing when `<UpdateNotifier />` re-mounts on
   /// a route change.
@@ -68,6 +77,7 @@ type Ephemeral = {
 type Actions = {
   checkNow: (force?: boolean) => Promise<void>
   applyUpdate: () => Promise<UpdateError | null>
+  cancelUpdate: () => Promise<void>
   skip: (version: string) => void
   clearSkipped: () => void
   setAutoCheckEnabled: (enabled: boolean) => void
@@ -83,6 +93,7 @@ const initialEphemeral: Ephemeral = {
   lastError: null,
   pendingUpdate: null,
   applying: false,
+  progress: null, applyStartedAt: null, progressAt: null,
   toastShownThisSession: false,
   dialogOpen: false,
   checking: false,
@@ -120,26 +131,38 @@ export const useUpdaterStore = create<UpdaterStore>()(
       applyUpdate: async () => {
         const info = get().pendingUpdate
         if (!info || get().applying) return null
-        set({ applying: true })
+        set({ applying: true, lastError: null, applyStartedAt: Date.now(), progressAt: Date.now(),
+          progress: { stage:'checking', downloaded:0, total:info.asset_size } })
+        let unlisten: (() => void) | undefined
         try {
-          // No payload: the backend applies the update it found during
-          // check_for_update (stashed server-side), so the webview can't
-          // substitute URLs or trust markers.
+          // Subscribe before invoking, so an immediate first chunk isn't lost.
+          unlisten = await listen<UpdateProgress>('update-progress', progress => {
+            if (!get().applying) return
+            if (get().progress?.stage === 'cancelling' && !['failed','cancelled'].includes(progress.stage)) return
+            set({ progress, progressAt:Date.now() })
+          })
           await invoke<void>('apply_update')
-          // Unreachable on success — the backend calls
-          // `AppHandle::restart` after a successful swap, which exits
-          // the current process.
           return null
         } catch (e) {
-          set({ applying: false })
-          // Tauri serialises the `Result<_, UpdateError>` Err variant as
-          // a JS object — but very old failure paths (e.g. command not
-          // registered) might come back as a string. Normalise.
-          if (typeof e === 'object' && e !== null && 'kind' in e) {
-            return e as UpdateError
-          }
-          return { kind: 'other', message: String(e) }
+          const error: UpdateError = typeof e === 'object' && e !== null && 'kind' in e
+            ? e as UpdateError : { kind:'other', message:String(e) }
+          set({ lastError:error.kind === 'cancelled' ? null : error.kind === 'other' ? error.message : '更新失败，请重试或手动下载。',
+            progress:{stage:error.kind === 'cancelled' ? 'cancelled':'failed', downloaded:get().progress?.downloaded ?? 0,total:info.asset_size} })
+          return error
+        } finally {
+          try { unlisten?.() } catch(e) { console.warn('update progress listener cleanup failed', e) } finally { set({applying:false}) }
         }
+      },
+      cancelUpdate: async () => {
+        if (!get().applying) return
+        try {
+          const accepted = await invoke<boolean>('cancel_update')
+          if (!get().applying) return
+          if (accepted) {
+            const current=get().progress
+            set({progress:{stage:'cancelling',downloaded:current?.downloaded ?? 0,total:current?.total ?? 0}})
+          } else { set({lastError:'当前已进入安装阶段或操作已结束，无法取消。'}) }
+        } catch(e) { set({lastError:`取消更新失败：${String(e)}`}) }
       },
 
       skip: (version: string) =>

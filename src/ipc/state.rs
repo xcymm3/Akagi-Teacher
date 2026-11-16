@@ -125,6 +125,7 @@ pub struct AppState {
     /// `apply_update` both `try_lock()` it so the user mashing buttons
     /// can't race two HTTP fetches or — worse — two binary swaps.
     pub updater_lock: Arc<Mutex<()>>,
+    pub update_control: Arc<crate::updater::transfer::ApplyControl>,
     /// Result of the last successful `check_for_update`, and the ONLY
     /// input `apply_update` acts on. The webview never round-trips an
     /// `UpdateInfo` back to us — fields like `asset_url` and
@@ -177,6 +178,7 @@ impl AppState {
             autoplay_context: Arc::new(AutoplayContext::new()),
             autoplay_manager_started: Arc::new(AtomicBool::new(false)),
             updater_lock: Arc::new(Mutex::new(())),
+            update_control: Arc::new(crate::updater::transfer::ApplyControl::default()),
             pending_update: Arc::new(RwLock::new(None)),
         }
     }

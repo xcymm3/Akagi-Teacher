@@ -1,12 +1,12 @@
 # Akagi Teacher 教师版中文使用说明
 
-本说明对应 `teacher-v3.7.2.14`，基于 Akagi v3.7.2，仅提供 Windows x64 便携包。
+本说明对应 `teacher-v3.7.2.15`，基于 Akagi v3.7.2，仅提供 Windows x64 便携包。
 
 ## 下载与启动
 
-1. 前往 [本仓库 Releases](https://github.com/xcymm3/Akagi-Teacher/releases/latest)，下载 `akagi-teacher-v3.7.2.14-windows-x64.zip`。不要选择 GitHub 自动生成的 `Source code` 压缩包。
+1. 前往 [本仓库 Releases](https://github.com/xcymm3/Akagi-Teacher/releases/latest)，下载 `akagi-teacher-v3.7.2.15-windows-x64.zip`。不要选择 GitHub 自动生成的 `Source code` 压缩包。
 2. 将整个压缩包解压到有写入权限的目录。保留程序旁的 `runtime` 文件夹，**不要在压缩包内直接运行，也不要只复制 EXE**。
-3. 已有完整旧版运行目录时，也可单独下载 `akagi-teacher-v3.7.2.14.exe`，放到原 EXE 同目录，保留 `runtime` 后运行；新用户请使用完整 ZIP。
+3. 已有完整旧版运行目录时，也可单独下载 `akagi-teacher-v3.7.2.15.exe`，放到原 EXE 同目录，保留 `runtime` 后运行；新用户请使用完整 ZIP。
 4. 关闭正在运行的旧版 Akagi，双击 `akagi-teacher.exe`。本包已带本地模型和 Python/uv 运行环境，无需另行训练模型、安装 Python 或购买云端密钥。
 5. 系统需具备 Microsoft Edge WebView2 Runtime。若程序提示缺少 WebView2，从 [微软官方页面](https://developer.microsoft.com/microsoft-edge/webview2/) 安装 Evergreen Runtime 后重试。此 EXE 未做数字签名，Windows 可能提示未知发布者；先确认下载来源和校验值。
 
@@ -113,12 +113,20 @@
 - 自动更新直接连接GitHub，不使用第三方镜像，必须取得GitHub返回的有效SHA-256；目前只支持Windows x64。更新涉及运行环境重大变化时，仍需完整便携包。
 - 发布维护：同步 `src/updater/teacher.rs` 的 `VERSION` 与 `teacher-v<四段版本号>` 标签，并上传 `akagi-teacher-v<四段版本号>.exe`。四段版本按数字比较，例如 `.10` 新于 `.9`；缺少EXE或校验值不会安装。
 
+### 更新下载没有反应时
+
+- v3.7.2.15起显示连接、下载、校验、替换、重启阶段，以及已下载大小、进度、平均速度和用时；下载期间可以取消。进入替换阶段后不可取消。
+- 等待下载服务器响应头超过20秒、连续30秒没有新数据或整个下载超过10分钟，会停止并显示错误，不再无限显示“下载中”。报错后可以重试或打开Release手动下载。
+- 检查更新使用GitHub API，EXE下载会跳转到GitHub Release/CDN；前者可访问不代表后者可访问。请检查运行软件那台电脑的网络／系统代理能否访问下载链接。
+- 已卡住的旧版本不会自动获得本修复。请先关闭旧程序，手动下载本版独立EXE放入原运行目录，保留runtime、配置、日志和WebView2资料，然后运行新EXE。无需重新下载完整运行环境。
+- 本版已经验证模拟服务器的响应头停滞、下载中断、超时、进度、取消和文件校验逻辑；没有在用户另一台电脑上复现，也没有进行真实窗口的原地更新重启验收。
+
 ## 校验下载
 
 同时下载 `SHA256SUMS.txt`，在 PowerShell 中执行：
 
 ```powershell
-Get-FileHash -Algorithm SHA256 .\akagi-teacher-v3.7.2.14-windows-x64.zip
+Get-FileHash -Algorithm SHA256 .\akagi-teacher-v3.7.2.15-windows-x64.zip
 ```
 
 将输出与 `SHA256SUMS.txt` 中对应 ZIP 的值比较。解压后的 EXE 校验值也列在校验文件中。

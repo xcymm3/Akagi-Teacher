@@ -1507,7 +1507,37 @@ pub async fn apply_update(
         });
     };
     let net = state.config.read().await.network.clone();
-    crate::updater::apply::download_and_apply(&app, &info, &net).await
+    let (_operation, mut cancelled) = state.update_control.begin();
+    let result = crate::updater::apply::download_and_apply(
+        &app,
+        &info,
+        &net,
+        &state.update_control,
+        &mut cancelled,
+    )
+    .await;
+    if let Err(error) = &result {
+        tracing::warn!("update apply failed: {error}");
+        let _ = crate::ipc::emit_shell(
+            &app,
+            "update-progress",
+            &crate::updater::transfer::UpdateProgress {
+                stage: if matches!(error, crate::updater::UpdateError::Cancelled) {
+                    "cancelled"
+                } else {
+                    "failed"
+                },
+                downloaded: 0,
+                total: info.asset_size,
+            },
+        );
+    }
+    result
+}
+
+#[tauri::command]
+pub fn cancel_update(state: State<'_, AppState>) -> bool {
+    state.update_control.cancel()
 }
 
 // ---------- Built-in bot cloud inference (native API) ----------
@@ -1910,6 +1940,7 @@ macro_rules! ipc_handlers {
             $crate::ipc::commands::delete_game_history_entry,
             $crate::ipc::commands::check_for_update,
             $crate::ipc::commands::apply_update,
+            $crate::ipc::commands::cancel_update,
             $crate::ipc::commands::native_api_redeem,
             $crate::ipc::commands::native_api_key_status,
             $crate::ipc::commands::native_api_models,

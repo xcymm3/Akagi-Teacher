@@ -6,7 +6,7 @@ use crate::github::{Asset, ReleaseJson};
 use anyhow::{bail, ensure, Context, Result};
 
 pub const REPO: &str = "xcymm3/Akagi-Teacher";
-pub const VERSION: &str = "3.7.2.14";
+pub const VERSION: &str = "3.7.2.15";
 
 pub fn direct_network() -> NetworkConfig {
     NetworkConfig {
