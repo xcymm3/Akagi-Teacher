@@ -249,6 +249,7 @@ mod tests {
             final_ranks: vec![1, 2, 3, 4],
             our_rank: Some(1),
             our_delta: Some(5000),
+            our_rank_points: None,
             stats: GameStats::default(),
             match_info: None,
             log_path: format!("games/{id}.mjai.jsonl"),

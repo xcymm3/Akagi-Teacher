@@ -34,10 +34,18 @@ describe('single-window game room', () => {
     render(<MemoryRouter><GameRoom /></MemoryRouter>)
     await waitFor(() => expect(screen.getByRole('status').textContent).toBe('正在排队，等待匹配'))
   })
-  it('opens a recorded game and toggles autoplay without changing other settings', async () => {
-    useHistoryStore.setState({records:[{id:'game-1',platform:'majsoul',started_at:'2026-11-14T12:00:00Z',num_players:4,kyoku_mode:'east_south',our_seat:0,our_rank:1,final_scores:[40000,25000,20000,15000],our_delta:15000} as GameRecord]})
+  it.each([[-180, '-180分'], [0, '0分'], [undefined, '上分数据缺失']])('renders rank-point change %s without falling back to table points', (points, label) => {
+    useHistoryStore.setState({records:[{id:'points',platform:'majsoul',started_at:'2026-11-14T12:00:00Z',num_players:4,kyoku_mode:'east_south',our_seat:0,our_rank:4,final_scores:[40000],our_delta:15000,our_rank_points:points} as GameRecord]})
     render(<MemoryRouter><GameRoom /></MemoryRouter>)
-    fireEvent.click(screen.getByText('1位'))
+    expect(screen.getByText(label as string)).toBeDefined()
+    expect(screen.queryByText('+15,000')).toBeNull()
+  })
+  it('opens a recorded game and toggles autoplay without changing other settings', async () => {
+    useHistoryStore.setState({records:[{id:'game-1',platform:'majsoul',started_at:'2026-11-14T12:00:00Z',num_players:4,kyoku_mode:'east_south',our_seat:0,our_rank:1,final_scores:[40000,25000,20000,15000],our_delta:15000,our_rank_points:150} as GameRecord]})
+    render(<MemoryRouter><GameRoom /></MemoryRouter>)
+    expect(screen.getByText('+150分')).toBeDefined()
+    expect(screen.queryByText('40,000')).toBeNull()
+    fireEvent.click(screen.getByText('第1名'))
     expect(screen.getByText('记录详情：game-1')).toBeDefined()
     fireEvent.click(screen.getByRole('switch',{name:'自动打牌'}))
     await waitFor(()=>expect(screen.getByRole('switch').getAttribute('aria-checked')).toBe('true'))

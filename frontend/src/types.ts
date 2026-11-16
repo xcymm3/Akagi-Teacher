@@ -689,6 +689,8 @@ export type GameRecord = {
   final_scores: number[]
   final_ranks: number[]
   our_rank: number | null
+  /** Actual server settlement rank-point change; absent on older records. */
+  our_rank_points?: number | null
   /** `final_score - starting_score` (4p:25000, 3p:35000). */
   our_delta: number | null
   stats: GameStats

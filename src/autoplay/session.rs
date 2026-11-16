@@ -891,6 +891,7 @@ mod tests {
             reason: GameEndReason::Terminated,
             final_scores: None,
             final_ranks: None,
+            rank_points: Vec::new(),
         });
         assert_eq!(s.snapshot().phase, WirePhase::Unknown);
         s.observe_mjai(&MjaiEvent::confirmed_game(None, None));

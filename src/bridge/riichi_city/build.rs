@@ -841,6 +841,7 @@ mod tests {
             reason: Default::default(),
             final_scores: None,
             final_ranks: None,
+            rank_points: Vec::new(),
         })
         .is_none());
         // A reach without its declaring tile cannot be sent — same contract

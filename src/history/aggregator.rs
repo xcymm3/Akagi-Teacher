@@ -292,6 +292,7 @@ pub fn aggregate(input: AggregateInput<'_>) -> Option<GameRecord> {
             reason: GameEndReason::Confirmed,
             final_scores,
             final_ranks,
+            ..
         } => Some((final_scores.as_ref(), final_ranks.as_ref())),
         _ => None,
     });
@@ -334,6 +335,15 @@ pub fn aggregate(input: AggregateInput<'_>) -> Option<GameRecord> {
     let our_rank = our_seat.map(|seat| final_ranks[seat as usize]);
     let our_delta = our_seat.map(|seat| cur_scores[seat as usize] - starting);
 
+    let our_rank_points = events.iter().rev().find_map(|ev| match ev {
+        MjaiEvent::EndGame {
+            reason: GameEndReason::Confirmed,
+            rank_points,
+            ..
+        } => our_seat.and_then(|seat| rank_points.get(usize::from(seat)).copied().flatten()),
+        _ => None,
+    });
+
     Some(GameRecord {
         id: id.clone(),
         started_at,
@@ -347,6 +357,7 @@ pub fn aggregate(input: AggregateInput<'_>) -> Option<GameRecord> {
         final_ranks,
         our_rank,
         our_delta,
+        our_rank_points,
         stats,
         match_info: game_meta.and_then(|meta| meta.match_info),
         log_path: format!("games/{id}.mjai.jsonl"),
@@ -474,6 +485,34 @@ mod tests {
         })
         .unwrap();
         assert_eq!(rec.match_info, Some(info));
+    }
+
+    #[test]
+    fn settlement_rank_points_are_separate_from_table_scores() {
+        for points in [Some(150), Some(-180), Some(0), None] {
+            let mut end = MjaiEvent::confirmed_game(Some(vec![40000, 25000, 20000, 15000]), None);
+            if let MjaiEvent::EndGame { rank_points, .. } = &mut end {
+                *rank_points = vec![points, None, None, None];
+            }
+            let events = vec![start_game_4p(0), start_kyoku("E", 0, vec![25000; 4]), end];
+            let rec = aggregate(AggregateInput {
+                events: &events,
+                platform: Platform::Majsoul,
+                started_at: ts(),
+                ended_at: ts(),
+                id: "RANKPOINTS".into(),
+            })
+            .unwrap();
+            assert_eq!(rec.our_rank_points, points);
+            assert_eq!(rec.our_delta, Some(15000));
+            let persisted = serde_json::to_value(&rec).unwrap();
+            let loaded: GameRecord = serde_json::from_value(persisted.clone()).unwrap();
+            assert_eq!(loaded.our_rank_points, points);
+            let mut old = persisted;
+            old.as_object_mut().unwrap().remove("our_rank_points");
+            let loaded: GameRecord = serde_json::from_value(old).unwrap();
+            assert_eq!(loaded.our_rank_points, None);
+        }
     }
 
     #[test]

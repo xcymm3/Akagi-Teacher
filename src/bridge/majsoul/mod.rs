@@ -319,7 +319,11 @@ impl MajsoulBridge {
                     parse_game_end_standings(&msg.payload, self.num_players)
                         .map(|(scores, ranks)| (Some(scores), Some(ranks)))
                         .unwrap_or((None, None));
-                vec![MjaiEvent::confirmed_game(final_scores, final_ranks)]
+                let mut event = MjaiEvent::confirmed_game(final_scores, final_ranks);
+                if let MjaiEvent::EndGame { rank_points, .. } = &mut event {
+                    *rank_points = parse_game_end_rank_points(&msg.payload, self.num_players);
+                }
+                vec![event]
             }
             (MessageType::Notify, METHOD_NOTIFY_GAME_TERMINATE) => {
                 info!(
@@ -1332,6 +1336,41 @@ fn parse_game_end_standings(payload: &JsonValue, num_players: u8) -> Option<(Vec
         scores.into_iter().collect::<Option<Vec<_>>>()?,
         ranks.into_iter().collect::<Option<Vec<_>>>()?,
     ))
+}
+
+// Missing grading_score must remain unknown rather than being confused with zero.
+fn parse_game_end_rank_points(payload: &JsonValue, num_players: u8) -> Vec<Option<i32>> {
+    let n = usize::from(num_players);
+    let Some(players) = payload
+        .pointer("/result/players")
+        .and_then(JsonValue::as_array)
+    else {
+        return Vec::new();
+    };
+    if !(3..=4).contains(&n) || players.len() != n {
+        return Vec::new();
+    }
+    let mut points = vec![None; n];
+    let mut seen = vec![false; n];
+    for player in players {
+        let Some(seat) = player
+            .get("seat")
+            .and_then(JsonValue::as_u64)
+            .and_then(|v| usize::try_from(v).ok())
+            .filter(|&seat| seat < n)
+        else {
+            return Vec::new();
+        };
+        if seen[seat] {
+            return Vec::new();
+        }
+        seen[seat] = true;
+        points[seat] = player
+            .get("grading_score")
+            .and_then(JsonValue::as_i64)
+            .and_then(|v| i32::try_from(v).ok());
+    }
+    points
 }
 
 /// Parse `data.scores` into a `Vec<i32>` of native length (3 for sanma, 4 for
@@ -4185,10 +4224,10 @@ mod tests {
             payload: json!({
                 "result": {
                     "players": [
-                        { "seat": 1, "total_point":  33800, "part_point_1": 43800 },
-                        { "seat": 3, "total_point":   4700, "part_point_1": 24700 },
+                        { "seat": 1, "total_point":  33800, "part_point_1": 43800, "grading_score": 150 },
+                        { "seat": 3, "total_point":   4700, "part_point_1": 24700, "grading_score": 0 },
                         { "seat": 0, "total_point":  -9500, "part_point_1": 20500 },
-                        { "seat": 2, "total_point": -29000, "part_point_1": 11000 },
+                        { "seat": 2, "total_point": -29000, "part_point_1": 11000, "grading_score": -180 },
                     ]
                 }
             }),
@@ -4201,8 +4240,10 @@ mod tests {
                 reason: crate::schema::GameEndReason::Confirmed,
                 final_scores: Some(scores),
                 final_ranks: Some(ranks),
+                rank_points,
             } if scores == &[20500, 43800, 11000, 24700]
                 && ranks == &[3, 1, 4, 2]
+                && rank_points == &[None, Some(150), Some(-180), Some(0)]
         ));
         assert_eq!(
             serde_json::to_string(&events[0]).unwrap(),

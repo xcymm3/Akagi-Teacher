@@ -212,6 +212,10 @@ pub struct GameRecord {
     /// /1000" base term.
     pub our_delta: Option<i32>,
 
+    /// Actual server-reported rank-point change; unknown for older records.
+    #[serde(default)]
+    pub our_rank_points: Option<i32>,
+
     pub stats: GameStats,
 
     /// Platform-specific match identity (rank room, game/paifu id). `None`
@@ -383,6 +387,7 @@ mod tests {
             final_ranks: vec![1, 2, 3, 4],
             our_rank: Some(1),
             our_delta: Some(5000),
+            our_rank_points: None,
             stats: GameStats::default(),
             match_info: Some(MatchInfo::Majsoul {
                 game_uuid: Some("u".into()),
@@ -414,6 +419,7 @@ mod tests {
             final_ranks: vec![1, 2, 3, 4],
             our_rank: Some(1),
             our_delta: Some(5000),
+            our_rank_points: None,
             stats: GameStats::default(),
             match_info: None,
             log_path: "games/01ARZ.mjai.jsonl".into(),
@@ -436,6 +442,7 @@ mod tests {
             final_ranks: vec![],
             our_rank: None,
             our_delta: None,
+            our_rank_points: None,
             stats: GameStats::default(),
             match_info: None,
             log_path: "x".into(),
@@ -462,6 +469,7 @@ mod tests {
             final_ranks: vec![1, 2, 3, 4],
             our_rank: Some(3),
             our_delta: Some(0),
+            our_rank_points: None,
             stats: GameStats::default(),
             match_info: None,
             log_path: "games/rec1.mjai.jsonl".into(),

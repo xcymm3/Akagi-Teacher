@@ -179,6 +179,9 @@ pub enum MjaiEvent {
         final_scores: Option<Vec<i32>>,
         #[serde(skip, default)]
         final_ranks: Option<Vec<u8>>,
+        /// Server settlement rank-point changes, indexed by seat; never sent to bots.
+        #[serde(skip, default)]
+        rank_points: Vec<Option<i32>>,
     },
 
     /// Non-spec: bot's "no action this turn" reply.
@@ -196,6 +199,7 @@ impl MjaiEvent {
             reason: GameEndReason::Confirmed,
             final_scores: None,
             final_ranks: None,
+            rank_points: Vec::new(),
         }
     }
 
@@ -204,6 +208,7 @@ impl MjaiEvent {
             reason: GameEndReason::Confirmed,
             final_scores,
             final_ranks,
+            rank_points: Vec::new(),
         }
     }
 
@@ -212,6 +217,7 @@ impl MjaiEvent {
             reason: GameEndReason::Terminated,
             final_scores: None,
             final_ranks: None,
+            rank_points: Vec::new(),
         }
     }
 }
@@ -425,6 +431,7 @@ mod tests {
                 reason: GameEndReason::Confirmed,
                 final_scores: None,
                 final_ranks: None,
+                ..
             }
         ));
     }

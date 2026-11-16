@@ -96,11 +96,12 @@ export function GameRoom() {
             {!records.length ? <p className="py-8 text-center text-xs text-muted-foreground">{loading ? '正在读取记录…' : '完成对局后，记录会自动保存在这里。'}</p>
               : <ol className="divide-y divide-border">{records.map(r => <li key={r.id}>
                 <button type="button" onClick={() => setSelected(r)} className="flex w-full items-center gap-3 rounded px-1 py-3 text-left hover:bg-muted active:bg-muted/70 focus-visible:outline-2 focus-visible:outline-ring">
-                  <span className="w-9 shrink-0 text-center font-mono text-lg tabular-nums">{r.our_rank ? `${r.our_rank}位` : '—'}</span>
+                  <span className="w-14 shrink-0 text-center font-mono text-sm tabular-nums">{r.our_rank ? `第${r.our_rank}名` : '—'}</span>
                   <span className="min-w-0 flex-1"><span className="block text-xs">{r.num_players}人 · {r.kyoku_mode === 'east_only' ? '东风' : r.kyoku_mode === 'east_south' ? '半庄' : '对局'}</span>
                     <time className="mt-1 block text-[11px] text-muted-foreground">{new Date(r.started_at).toLocaleString('zh-CN',{month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit',hour12:false})}</time></span>
-                  <span className="shrink-0 text-right font-mono text-sm tabular-nums">{r.our_seat !== null ? r.final_scores[r.our_seat]?.toLocaleString() ?? '—' : '—'}
-                    <span className={`mt-1 block text-[11px] ${(r.our_delta ?? 0) >= 0 ? 'text-green-600' : 'text-red-500'}`}>{r.our_delta === null ? '观战' : `${r.our_delta > 0 ? '+' : ''}${r.our_delta.toLocaleString()}`}</span></span>
+                  <span className={`shrink-0 text-right text-sm tabular-nums ${r.our_rank_points == null ? 'text-muted-foreground' : r.our_rank_points >= 0 ? 'text-green-600' : 'text-red-500'}`}>
+                    {r.our_seat === null ? '观战' : r.our_rank_points == null ? '上分数据缺失' : `${r.our_rank_points > 0 ? '+' : ''}${r.our_rank_points.toLocaleString()}分`}
+                  </span>
                 </button>
               </li>)}</ol>}
           </div>
