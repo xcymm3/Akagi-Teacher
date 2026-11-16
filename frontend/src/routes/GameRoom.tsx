@@ -1,7 +1,6 @@
 /* Hallmark · pre-emit critique: P4 H5 E4 S5 R5 V4 */
 // Existing theme, tile assets and teacher renderer; no additional dashboard.
 import { useEffect, useMemo, useRef, useState } from 'react'
-import { Link } from 'react-router-dom'
 import { History as HistoryIcon, RefreshCw, Settings } from 'lucide-react'
 import { BotShowList } from '@/components/BotShowList'
 import { GameDetailDialog } from '@/components/history/GameDetailDialog'
@@ -97,7 +96,7 @@ export function GameRoom() {
         <section aria-label="对局记录" className="flex min-h-0 flex-1 flex-col">
           <div className="flex shrink-0 items-center justify-between px-3 py-3">
             <h2 className="flex items-center gap-2 text-sm font-semibold"><HistoryIcon className="size-4 text-muted-foreground" />对局记录</h2>
-            <Link to="/history" className="text-xs text-muted-foreground hover:text-foreground focus-visible:outline-2 focus-visible:outline-ring">全部记录</Link>
+            <button type="button" onClick={() => {void invoke('open_settings', {tab:'history'}).catch(e => setError(String(e)))}} className="text-xs text-muted-foreground hover:text-foreground focus-visible:outline-2 focus-visible:outline-ring">全部记录</button>
           </div>
           <div className="min-h-0 flex-1 overflow-y-auto px-3 pb-3">
             {!records.length ? <p className="py-8 text-center text-xs text-muted-foreground">{loading ? '正在读取记录…' : '完成对局后，记录会自动保存在这里。'}</p>
@@ -115,6 +114,6 @@ export function GameRoom() {
         </section>
       </aside>
     </main>
-    <GameDetailDialog record={selected} onOpenChange={open => { if (!open) setSelected(null) }} />
+    <GameDetailDialog localOnly record={selected} onOpenChange={open => { if (!open) setSelected(null) }} />
   </div>
 }

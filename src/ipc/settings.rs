@@ -117,17 +117,21 @@ pub async fn open_settings(
     tracing::info!(target: "akagi::settings", "opening settings accessory window");
     let (tx, rx) = tokio::sync::oneshot::channel();
     let handle = app.clone();
-    let tab = if tab.as_deref() == Some("updates") {
-        "updates"
-    } else {
-        "autoplay"
+    let tab = match tab.as_deref() {
+        Some("updates") => "updates",
+        Some("history") => "history",
+        Some("analysis") => "analysis",
+        Some("overview") => "overview",
+        Some("appearance") => "appearance",
+        _ => "autoplay",
     };
     app.run_on_main_thread(move || {
         let result = (|| -> anyhow::Result<()> {
             if let Some(w) = handle.get_webview_window(LABEL) {
-                if tab == "updates" {
-                    let _ = w.eval("window.dispatchEvent(new Event('show-updates'))");
-                }
+                w.eval(format!(
+                    "window.dispatchEvent(new CustomEvent('show-settings-tab', {{detail: {}}}))",
+                    serde_json::to_string(tab)?
+                ))?;
                 w.show()?;
                 w.set_focus()?;
                 return Ok(());
@@ -143,8 +147,8 @@ pub async fn open_settings(
                 WebviewUrl::App(format!("index.html?settingsTab={tab}").into()),
             )
             .title("Akagi 教师版 · 设置")
-            .inner_size(560.0, 540.0)
-            .min_inner_size(440.0, 380.0)
+            .inner_size(780.0, 640.0)
+            .min_inner_size(660.0, 460.0)
             .resizable(true)
             .maximizable(false)
             .minimizable(false)

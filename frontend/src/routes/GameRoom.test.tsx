@@ -29,7 +29,8 @@ describe('single-window game room', () => {
     expect(invoke).toHaveBeenCalledWith('open_settings', { tab: null })
     expect(screen.getByRole('region',{name:'雀魂游戏'})).toBeDefined()
     expect(invoke).not.toHaveBeenCalledWith('set_autoplay_enabled', expect.anything())
-    expect(screen.getByRole('link',{name:'全部记录'}).getAttribute('href')).toBe('/history')
+    fireEvent.click(screen.getByRole('button',{name:'全部记录'}))
+    expect(invoke).toHaveBeenCalledWith('open_settings', {tab:'history'})
   })
   it('opens accessory settings while autoplay remains enabled and the game stays mounted', () => {
     useConfigStore.setState({config:{autoplay:{enabled:true}} as AppConfig})

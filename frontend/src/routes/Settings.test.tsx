@@ -18,9 +18,9 @@ async function mount() {
 }
 describe('compact accessory settings', () => {
   beforeEach(() => { invoke.mockReset() })
-  it('only exposes three tabs without hiding the game or changing the master switch', async () => {
+  it('exposes the compact tools and preferences sidebar without hiding the game or changing the master switch', async () => {
     await mount()
-    expect(screen.getAllByRole('tab').map(el => el.textContent)).toEqual(['自动打牌','界面','软件更新'])
+    expect(screen.getAllByRole('tab').map(el => el.textContent)).toEqual(['总览','实时分析','历史记录','自动打牌','界面','软件更新'])
     for (const label of ['平台','云端模型','悬浮窗','日志','网络','本地模型']) expect(screen.queryByText(label)).toBeNull()
     expect(screen.queryByRole('switch', {name:'自动打牌'})).toBeNull()
     expect(invoke).not.toHaveBeenCalledWith('sync_embedded_game', expect.anything())

@@ -36,7 +36,9 @@ export function GameDetailDialog({
   record,
   onOpenChange,
   onReview,
+  localOnly = false,
 }: {
+  localOnly?: boolean
   record: GameRecord | null
   onOpenChange: (open: boolean) => void
   /** Open the review submit flow for this game (the caller closes this
@@ -115,7 +117,7 @@ export function GameDetailDialog({
               </Section>
             )}
 
-            <ReviewSection record={record} onReview={onReview} />
+            {!localOnly && <ReviewSection record={record} onReview={onReview} />}
 
             <Section title={t('history.detail.final')}>
               <Table>

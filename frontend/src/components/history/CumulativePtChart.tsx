@@ -16,7 +16,7 @@ import {
 
 import type { CumulativePoint } from '@/lib/ptCalc'
 
-export function CumulativePtChart({ series }: { series: CumulativePoint[] }) {
+export function CumulativePtChart({ series, label:seriesLabel }: { series: CumulativePoint[]; label?: string }) {
   const { t } = useTranslation()
 
   if (series.length === 0) {
@@ -62,7 +62,7 @@ export function CumulativePtChart({ series }: { series: CumulativePoint[] }) {
             formatter={(value, name) => {
               const v = typeof value === 'number' ? value : Number(value)
               const label =
-                String(name) === 'cumulative' ? t('history.cumulative_pt') : 'Δ'
+                String(name) === 'cumulative' ? seriesLabel ?? t('history.cumulative_pt') : 'Δ'
               return [v.toFixed(1), label]
             }}
           />
