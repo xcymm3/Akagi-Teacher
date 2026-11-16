@@ -152,6 +152,7 @@ pub fn run() {
                 // which would put decorations back on a deliberately frameless
                 // window. `ipc::overlay::open` restores position+size itself.
                 .skip_initial_state(ipc::overlay::LABEL)
+                .skip_initial_state(ipc::settings::LABEL)
                 .build(),
         )
         .invoke_handler({
@@ -228,6 +229,9 @@ pub fn run() {
                     let handle = app.handle().clone();
                     main.on_window_event(move |event| {
                         if matches!(event, tauri::WindowEvent::CloseRequested { .. }) {
+                            if let Some(settings) = handle.get_webview_window(ipc::settings::LABEL) {
+                                let _ = settings.destroy();
+                            }
                             if let Err(e) = ipc::overlay::close(&handle) {
                                 warn!("overlay: could not close with the main window: {e}");
                             }

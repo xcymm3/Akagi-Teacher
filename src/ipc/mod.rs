@@ -43,6 +43,7 @@
 pub mod capture_supervisor;
 pub mod commands;
 pub mod overlay;
+pub mod settings;
 pub mod state;
 
 pub use state::AppState;
@@ -58,7 +59,7 @@ pub(crate) fn emit_shell<R: Runtime, T: serde::Serialize + ?Sized>(
     event: &str,
     payload: &T,
 ) -> tauri::Result<()> {
-    for label in ["main", "overlay", "debug"] {
+    for label in ["main", "overlay", "debug", "settings"] {
         app.emit_to(tauri::EventTarget::webview(label), event, payload)?;
     }
     Ok(())

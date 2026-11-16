@@ -1,0 +1,6 @@
+{
+  "identifier": "settings",
+  "description": "Allow settings to close after checking unsaved changes",
+  "webviews": ["settings"],
+  "permissions": ["core:window:allow-close"]
+}

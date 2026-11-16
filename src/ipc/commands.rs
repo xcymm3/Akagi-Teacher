@@ -1860,7 +1860,7 @@ pub async fn native_api_checkout_result(
     .map_err(|e| format!("{e:#}"))
 }
 
-fn persist_config(config: &AppConfig, path: &Path) -> std::io::Result<()> {
+pub(super) fn persist_config(config: &AppConfig, path: &Path) -> std::io::Result<()> {
     if let Some(parent) = path.parent() {
         if !parent.as_os_str().is_empty() {
             std::fs::create_dir_all(parent)?;
@@ -1895,6 +1895,9 @@ macro_rules! ipc_handlers {
     () => {
         ::tauri::generate_handler![
             $crate::ipc::commands::get_config,
+            $crate::ipc::settings::open_settings,
+            $crate::ipc::settings::get_teacher_settings,
+            $crate::ipc::settings::save_teacher_settings,
             $crate::ipc::commands::sync_embedded_game,
             $crate::ipc::commands::reload_embedded_game,
             $crate::ipc::commands::get_teacher_version,

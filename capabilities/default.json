@@ -1,7 +1,7 @@
 {
   "identifier": "default",
   "description": "Default capability",
-  "webviews": ["main", "debug"],
+  "webviews": ["main", "debug", "settings"],
   "permissions": [
     "core:default",
     "core:event:default",

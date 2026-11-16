@@ -1,75 +1,20 @@
-import { useEffect } from 'react'
 import { Link, Outlet, useLocation } from 'react-router-dom'
 import { GameRoom } from '@/routes/GameRoom'
-import { Sidebar } from '@/components/sidebar/Sidebar'
-import { NarrowTopBar } from '@/components/sidebar/NarrowTopBar'
-import { Statusbar } from '@/components/Statusbar'
 import { ErrorBoundary } from '@/components/ErrorBoundary'
 import { Toaster } from '@/components/ui/sonner'
 import { UpdateNotifier } from '@/components/UpdateNotifier'
-import { AnnouncementsDialog } from '@/components/AnnouncementsDialog'
-import { InstallBlockingOverlay } from '@/components/InstallBlockingOverlay'
 import { useTauriBridge } from '@/hooks/useTauriBridge'
-import { useSidebar } from '@/hooks/useSidebar'
-import { useUiPrefsStore } from '@/stores/uiPrefsStore'
-import { cn } from '@/lib/utils'
+import { useUiPreferences } from '@/hooks/useUiPreferences'
 
 export default function App() {
   useTauriBridge()
+  useUiPreferences()
   const location = useLocation()
-  const scale = useUiPrefsStore((s) => s.scale)
-  const isOpen = useSidebar((s) => s.isOpen)
-  const settings = useSidebar((s) => s.settings)
-
-  // Apply UI scale by adjusting :root font-size — the design system is
-  // rem-based so this scales typography, spacing, icons, sidebar width
-  // (w-[18rem] / w-[5.625rem]), and Radix portals uniformly.
-  useEffect(() => {
-    document.documentElement.style.fontSize = `${16 * scale}px`
-    return () => {
-      document.documentElement.style.fontSize = ''
-    }
-  }, [scale])
-
-  if (location.pathname === '/') return <>
-    <GameRoom />
-    <Toaster />
-    <UpdateNotifier />
+  return <>
+    {location.pathname === '/' ? <GameRoom /> : <main className="flex h-screen min-w-0 flex-col bg-background text-foreground">
+      <div className="shrink-0 border-b border-border px-4 py-2"><Link to="/" className="text-sm hover:underline">← 返回对局</Link></div>
+      <div className="min-h-0 flex-1 overflow-auto"><ErrorBoundary key={location.pathname}><Outlet /></ErrorBoundary></div>
+    </main>}
+    <Toaster /><UpdateNotifier />
   </>
-
-  return (
-    <>
-      <Sidebar />
-      <main
-        className={cn(
-          'h-screen flex flex-col min-w-0 overflow-hidden bg-background text-foreground transition-[margin-left] ease-in-out duration-300',
-          // Margin tracks the *pinned* width only — hover-open expands the
-          // sidebar over main content (z-20) without shifting layout, so
-          // width-sensitive widgets like the GameDashboard's react-grid-layout
-          // don't re-flow every time the cursor brushes the sidebar.
-          settings.disabled
-            ? 'lg:ml-0'
-            : isOpen
-              ? 'lg:ml-[18rem]'
-              : 'lg:ml-[5.625rem]',
-        )}
-      >
-        {/* Below `lg` the sidebar is an off-screen drawer, so this is the
-            only navigation entry point. Renders null when docked. */}
-        <div className="shrink-0 border-b border-border px-4 py-2"><Link to="/" className="text-sm hover:underline">← 返回对局</Link></div>
-        <NarrowTopBar />
-        <div className="flex-1 overflow-auto">
-          {/* Keyed by route so a crash on one page doesn't poison the others. */}
-          <ErrorBoundary key={location.pathname}>
-            <Outlet />
-          </ErrorBoundary>
-        </div>
-        <Statusbar />
-      </main>
-      <Toaster />
-      <UpdateNotifier />
-      <AnnouncementsDialog />
-      <InstallBlockingOverlay />
-    </>
-  )
 }

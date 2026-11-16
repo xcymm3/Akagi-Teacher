@@ -3,8 +3,7 @@ import { useTranslation } from 'react-i18next'
 import { toast } from 'sonner'
 
 import { selectHasNotifiableUpdate, useUpdaterStore } from '@/stores/updaterStore'
-import { HAS_TAURI } from '@/lib/tauri'
-import { UpdateDialog } from '@/components/UpdateDialog'
+import { HAS_TAURI, invoke } from '@/lib/tauri'
 
 /// Invisible coordinator. Mount it once near the root of the tree.
 ///
@@ -13,14 +12,12 @@ import { UpdateDialog } from '@/components/UpdateDialog'
 ///      but only when the user has auto-check enabled and we aren't
 ///      already inside the 6-hour throttle window.
 ///   2. When a new, non-skipped update arrives, fire a single sonner
-///      toast per session with a "View details" action that opens the
-///      `<UpdateDialog />`.
-///   3. Host the `<UpdateDialog />` so it can be opened from anywhere.
+///      toast per session with a "View details" action that opens
+///      the accessory settings window, leaving the embedded game visible.
 export function UpdateNotifier() {
   const { t } = useTranslation()
   const autoCheckEnabled = useUpdaterStore((s) => s.autoCheckEnabled)
   const checkNow = useUpdaterStore((s) => s.checkNow)
-  const openDialog = useUpdaterStore((s) => s.openDialog)
   const markToastShown = useUpdaterStore((s) => s.markToastShown)
   const toastShown = useUpdaterStore((s) => s.toastShownThisSession)
   const pending = useUpdaterStore((s) => s.pendingUpdate)
@@ -48,13 +45,13 @@ export function UpdateNotifier() {
       duration: 10_000,
       action: {
         label: t('updates.toast.action'),
-        onClick: openDialog,
+        onClick: () => { void invoke('open_settings', { tab: 'updates' }).catch(e => toast.error(String(e))) },
       },
     })
     markToastShown()
-    // openDialog/markToastShown are stable zustand actions.
+    // markToastShown is a stable zustand action.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [hasNotifiable, pending, toastShown, t])
 
-  return <UpdateDialog />
+  return null
 }
