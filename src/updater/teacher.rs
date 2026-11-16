@@ -33,6 +33,10 @@ fn parts(version: &str) -> Option<[u32; 4]> {
     values.try_into().ok()
 }
 
+pub fn valid_tag(tag: &str) -> bool {
+    tag.starts_with("teacher-v") && parts(tag).is_some()
+}
+
 pub fn build_info(
     current: &str,
     triple: &str,

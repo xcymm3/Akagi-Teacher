@@ -133,7 +133,19 @@ pub async fn check_for_update(repo: &str, net: &NetworkConfig) -> Result<Option<
     } else {
         net
     };
-    let (release, source) = fetch_latest_release_mirrored(&client, repo, network).await?;
+    let (release, source) = match fetch_latest_release_mirrored(&client, repo, network).await {
+        Ok(result) => result,
+        Err(api_error) if repo == super::teacher::REPO => {
+            tracing::warn!(
+                "GitHub API unavailable; trying official release web page: {api_error:#}"
+            );
+            let release = super::web_release::fetch(&client).await.map_err(|web_error| anyhow::anyhow!(
+                "暂时无法检查更新，请稍后重试或前往 GitHub 发布页。API：{api_error:#}；官方网页：{web_error:#}"
+            ))?;
+            (release, Source::Direct)
+        }
+        Err(error) => return Err(error),
+    };
     if repo == super::teacher::REPO {
         super::teacher::build_info(super::teacher::VERSION, triple, &release, source)
     } else {
