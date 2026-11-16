@@ -117,13 +117,11 @@ pub async fn open_settings(
     tracing::info!(target: "akagi::settings", "opening settings accessory window");
     let (tx, rx) = tokio::sync::oneshot::channel();
     let handle = app.clone();
-    let tab = match tab.as_deref() {
-        Some("updates") => "updates",
-        Some("history") => "history",
-        Some("analysis") => "analysis",
-        Some("overview") => "overview",
-        Some("appearance") => "appearance",
-        _ => "autoplay",
+    let show_update = tab.as_deref() == Some("updates");
+    let tab = if tab.as_deref() == Some("logs") {
+        "logs"
+    } else {
+        "history"
     };
     app.run_on_main_thread(move || {
         let result = (|| -> anyhow::Result<()> {
@@ -132,6 +130,9 @@ pub async fn open_settings(
                     "window.dispatchEvent(new CustomEvent('show-settings-tab', {{detail: {}}}))",
                     serde_json::to_string(tab)?
                 ))?;
+                if show_update {
+                    w.eval("window.dispatchEvent(new Event('show-update-dialog'))")?;
+                }
                 w.show()?;
                 w.set_focus()?;
                 return Ok(());
@@ -144,9 +145,15 @@ pub async fn open_settings(
             let builder = WebviewWindowBuilder::new(
                 &handle,
                 LABEL,
-                WebviewUrl::App(format!("index.html?settingsTab={tab}").into()),
+                WebviewUrl::App(
+                    format!(
+                        "index.html?settingsTab={tab}&showUpdate={}",
+                        u8::from(show_update)
+                    )
+                    .into(),
+                ),
             )
-            .title("Akagi 教师版 · 设置")
+            .title("Akagi 教师版 · 历史与日志")
             .inner_size(780.0, 640.0)
             .min_inner_size(660.0, 460.0)
             .resizable(true)

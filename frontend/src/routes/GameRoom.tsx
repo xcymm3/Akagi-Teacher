@@ -77,7 +77,7 @@ export function GameRoom() {
         </button>
         <button type="button" aria-label="刷新雀魂" title="刷新雀魂并重新连接" disabled={refreshing} onClick={() => void reload()}
           className="rounded p-2 text-muted-foreground hover:bg-muted hover:text-foreground focus-visible:outline-2 focus-visible:outline-ring disabled:opacity-50"><RefreshCw className={`size-4 ${refreshing ? 'animate-spin' : ''}`} /></button>
-        <button type="button" aria-label="设置" aria-busy={openingSettings} disabled={openingSettings} title={openingSettings ? '正在打开设置…' : '设置与更新'} onClick={() => void openSettings()} className="rounded p-2 text-muted-foreground hover:bg-muted hover:text-foreground focus-visible:outline-2 focus-visible:outline-ring disabled:cursor-wait disabled:opacity-50"><Settings className={`size-4 ${openingSettings ? 'animate-spin' : ''}`} /></button>
+        <button type="button" aria-label="设置" aria-busy={openingSettings} disabled={openingSettings} title={openingSettings ? '正在打开设置…' : '历史记录与日志查看'} onClick={() => void openSettings()} className="rounded p-2 text-muted-foreground hover:bg-muted hover:text-foreground focus-visible:outline-2 focus-visible:outline-ring disabled:cursor-wait disabled:opacity-50"><Settings className={`size-4 ${openingSettings ? 'animate-spin' : ''}`} /></button>
       </div>
     </header>
     <main className="flex min-h-0 flex-1 max-md:flex-col">

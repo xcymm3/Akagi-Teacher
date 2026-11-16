@@ -46,7 +46,7 @@ function formatBytes(n: number): string {
  * (inspector) without losing the session selection or live-tail state is
  * the entire point.
  */
-export function Logs() {
+export function Logs({ embedded = false }: { embedded?: boolean } = {}) {
   const { t } = useTranslation()
 
   const sessions = useLogsStore((s) => s.sessions)
@@ -150,10 +150,10 @@ export function Logs() {
   const handleScrolledAway = () => setAutoScroll(false)
 
   return (
-    <div className="p-6 flex flex-col gap-4 w-full h-full min-h-0">
+    <div className={`${embedded ? '' : 'p-6'} flex flex-col gap-4 w-full h-full min-h-0`}>
       <header className="flex items-center justify-between flex-wrap gap-3">
         <div className="flex items-center gap-3">
-          <h1 className="text-2xl font-semibold">{t('logs.title')}</h1>
+          {!embedded && <h1 className="text-2xl font-semibold">{t('logs.title')}</h1>}
           {isViewingActive && (
             <Badge
               variant="outline"

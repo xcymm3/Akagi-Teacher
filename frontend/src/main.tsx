@@ -6,8 +6,6 @@ import './index.css'
 import './i18n'
 import './stores/themeStore'
 import App from './App.tsx'
-import { History } from '@/routes/History'
-import { Review } from '@/routes/Review'
 import { Settings } from '@/routes/Settings'
 import { Overlay } from '@/routes/Overlay'
 import { currentWindowLabel } from '@/lib/window'
@@ -24,8 +22,6 @@ if (label === 'settings') {
     element: <App />,
     children: [
       { index: true, element: null },
-      { path: 'history', element: <History /> },
-      { path: 'review', element: <Review /> },
       { path: '*', element: <Navigate to="/" replace /> },
     ],
   }])

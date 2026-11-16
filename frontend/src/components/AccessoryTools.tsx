@@ -1,18 +1,12 @@
 import { useMemo, useState } from 'react'
-import { Activity, ArrowUpRight, Copy, History, ShieldCheck } from 'lucide-react'
+import { ArrowUpRight, Copy } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { GameDetailDialog } from '@/components/history/GameDetailDialog'
 import { RankPieChart } from '@/components/history/RankPieChart'
 import { CumulativePtChart } from '@/components/history/CumulativePtChart'
-import { useBotStore } from '@/stores/botStore'
-import { useCaptureStore } from '@/stores/captureStore'
 import { useConfigStore } from '@/stores/configStore'
-import { useAnalysisStore } from '@/stores/analysisStore'
-import { useGameStore } from '@/stores/gameStore'
 import { useHistoryStore } from '@/stores/historyStore'
 import { recordSummary, majsoulReplayUrl } from '@/lib/recordSummary'
-import { kyokuLabel, pct, relativeKind } from '@/lib/format'
-import { tileIdx } from '@/lib/tileIdx'
 import { copyText } from '@/lib/clipboard'
 import { openExternal } from '@/lib/external'
 import type { GameRecord } from '@/types'
@@ -22,50 +16,6 @@ export function ToolSection({title, children}: {title:string;children:React.Reac
 }
 function Metric({label,value}: {label:string;value:string}) {
   return <div className="min-w-0"><div className="mb-1 text-xs text-muted-foreground">{label}</div><div className="text-xl font-semibold tabular-nums tracking-tight">{value}</div></div>
-}
-export function AccessoryOverview() {
-  const capture = useCaptureStore(s => s.status)
-  const bot = useBotStore(s => s.status)
-  const autoplay = useConfigStore(s => s.config?.autoplay.enabled ?? false)
-  const game = useGameStore(s => s.game)
-  const records = useHistoryStore(s => s.records)
-  const summary = useMemo(() => recordSummary(records,4),[records])
-  const labels: Record<string,string> = {ready:'就绪',running:'已连接',idle:'待命',loading:'加载中',starting:'连接中',error:'异常',stopped:'已停止'}
-  return <div className="grid gap-5">
-    <ToolSection title="运行状态"><dl className="grid gap-4 text-sm">
-      <StatusRow icon={<Activity className="size-4" />} label="雀魂连接" value={labels[capture.state] ?? capture.state} good={capture.state === 'running'} />
-      <StatusRow icon={<ShieldCheck className="size-4" />} label="推理引擎" value={labels[bot.state] ?? bot.state} good={bot.state === 'ready'} />
-      <StatusRow icon={<History className="size-4" />} label="自动打牌" value={autoplay ? '开启' : '关闭'} good={autoplay} />
-      {'bot' in bot && <div className="flex justify-between gap-4"><dt className="text-muted-foreground">当前模型</dt><dd className="break-all text-right font-mono text-xs">{bot.bot}</dd></div>}
-      {game && !game.is_done && <div className="flex justify-between"><dt className="text-muted-foreground">当前对局</dt><dd>{kyokuLabel(game.bakaze,game.kyoku)} · {game.honba}本场</dd></div>}
-      {capture.state === 'error' && <p role="alert" className="break-words text-xs text-destructive">{capture.error}</p>}
-      {bot.state === 'error' && <p role="alert" className="break-words text-xs text-destructive">{bot.error}</p>}
-    </dl></ToolSection>
-    <ToolSection title="四麻记录概况"><div className="grid grid-cols-3 gap-4"><Metric label="已记录场次" value={String(summary.games.length)} /><Metric label="平均名次" value={summary.average?.toFixed(2) ?? '—'} /><Metric label="已记录上分" value={signed(summary.points)} /></div>
-      <p className="mt-4 text-xs text-muted-foreground">上分合计仅包含有结算数据的 {summary.known} 场。</p>
-    </ToolSection>
-  </div>
-}
-function StatusRow({icon,label,value,good}:{icon:React.ReactNode;label:string;value:string;good:boolean}) {
-  return <div className="flex items-center justify-between gap-4"><dt className="flex items-center gap-2 text-muted-foreground">{icon}{label}</dt><dd className="flex items-center gap-2"><span className={`size-1.5 rounded-full ${good ? 'bg-emerald-500' : 'bg-muted-foreground/50'}`} />{value}</dd></div>
-}
-const SEATS = {self:'自己',shimocha:'下家',toimen:'对家',kamicha:'上家'}
-const HONORS:Record<string,string> = {E:'东',S:'南',W:'西',N:'北',P:'白',F:'发',C:'中'}
-function tileName(tile:string) { return HONORS[tile] ?? tile.replace('m','万').replace('p','筒').replace('s','条').replace('r','（赤）') }
-export function AccessoryAnalysis() {
-  const analysis = useAnalysisStore(s => s.result)
-  const game = useGameStore(s => s.game)
-  if (!game || game.is_done || !analysis) return <Empty text="进入对局后显示实时分析" />
-  const tiles = game.our_seat == null ? [] : game.players[game.our_seat]?.tehai ?? []
-  return <div className="grid gap-5">
-    <ToolSection title="手牌概况"><div className="grid grid-cols-3 gap-4"><Metric label="当前向听" value={String(analysis.shanten)} /><Metric label="巡目" value={String(analysis.turn)} /><Metric label="手牌张数" value={String(tiles.length)} /></div></ToolSection>
-    <ToolSection title="原分析引擎 · 手牌危险度"><div className="grid grid-cols-4 gap-2 sm:grid-cols-5">
-      {tiles.map((tile,i) => {const value = analysis.mixed_risk[tileIdx(tile)];return <div key={`${tile}-${i}`} className="rounded-lg border border-border/70 px-2 py-3 text-center"><div className="text-sm font-medium">{tileName(tile)}</div><div className={`mt-1 text-xs tabular-nums ${value >= 10 ? 'text-destructive' : 'text-muted-foreground'}`}>{pct(value)}</div></div>})}
-    </div></ToolSection>
-    <ToolSection title="对手威胁"><table className="w-full text-left text-sm"><thead className="text-xs text-muted-foreground"><tr><th className="pb-3 font-normal">位置</th><th className="pb-3 font-normal">状态</th><th className="pb-3 text-right font-normal">估计听牌率</th></tr></thead><tbody>
-      {analysis.opponents.map(opponent => <tr key={opponent.seat} className="border-t border-border/60"><td className="py-3">{game.our_seat == null ? `座位 ${opponent.seat+1}` : SEATS[relativeKind(opponent.seat,game.our_seat,game.num_players)]}</td><td>{opponent.is_riichi ? '立直' : '未立直'}</td><td className="text-right tabular-nums">{pct(opponent.tenpai_rate)}</td></tr>)}
-    </tbody></table></ToolSection>
-  </div>
 }
 function signed(value:number|null|undefined) {return value == null ? '—' : `${value > 0 ? '+' : ''}${value.toLocaleString()}分`}
 export function AccessoryHistory() {
