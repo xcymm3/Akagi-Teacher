@@ -6,7 +6,7 @@ use crate::github::{Asset, ReleaseJson};
 use anyhow::{bail, ensure, Context, Result};
 
 pub const REPO: &str = "xcymm3/Akagi-Teacher";
-pub const VERSION: &str = "3.7.2.13";
+pub const VERSION: &str = "3.7.2.14";
 
 pub fn direct_network() -> NetworkConfig {
     NetworkConfig {
@@ -108,6 +108,15 @@ pub fn validate_asset(tag: &str, asset: &Asset) -> Result<()> {
 #[cfg(test)]
 mod tests {
     use super::*;
+    fn next_version() -> String {
+        let mut values = parts(VERSION).unwrap();
+        values[3] += 1;
+        values
+            .iter()
+            .map(u32::to_string)
+            .collect::<Vec<_>>()
+            .join(".")
+    }
     fn release(version: &str) -> ReleaseJson {
         let tag = format!("teacher-v{version}");
         let name = format!("akagi-teacher-v{version}.exe");
@@ -145,22 +154,22 @@ mod tests {
     }
     #[test]
     fn refuses_wrong_origin_missing_digest_or_mirror_metadata() {
-        let mut r = release("3.7.2.14");
+        let mut r = release(&next_version());
         assert!(build_info(VERSION, "windows-x64", &r, Source::Mirror).is_err());
         r.assets[0].browser_download_url = "https://example.com/app.exe".into();
         assert!(build_info(VERSION, "windows-x64", &r, Source::Direct).is_err());
-        r = release("3.7.2.14");
+        r = release(&next_version());
         r.assets[0].digest = None;
         assert!(build_info(VERSION, "windows-x64", &r, Source::Direct).is_err());
     }
     #[test]
     fn ignores_upstream_tags_and_reports_unfinished_release() {
-        let mut r = release("3.7.2.14");
+        let mut r = release(&next_version());
         r.tag_name = Some("v4.0.0".into());
         assert!(build_info(VERSION, "windows-x64", &r, Source::Direct)
             .unwrap()
             .is_none());
-        r = release("3.7.2.14");
+        r = release(&next_version());
         r.assets.clear();
         assert!(build_info(VERSION, "windows-x64", &r, Source::Direct).is_err());
     }
