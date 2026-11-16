@@ -165,6 +165,7 @@ impl CaptureBackend for EmbeddedBackend {
             .map(|a| crate::bridge::BridgeHooks {
                 time_budget: Some(a.time_budget.clone()),
                 input_watch: Some(a.input_watch.clone()),
+                session: Some(a.session.clone()),
                 tenhou_state: None,
                 riichi_inject: None,
                 notify: None,

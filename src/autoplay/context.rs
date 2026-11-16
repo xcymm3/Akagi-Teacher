@@ -26,6 +26,10 @@ use tokio::sync::RwLock;
 #[derive(Default)]
 pub struct AutoplayContext {
     pub page: Arc<RwLock<Option<Page>>>,
+    pub session: Arc<super::session::SessionSignals>,
+    /// Shared ownership for lobby/result input and the existing decision executor.
+    pub input_lock: Arc<tokio::sync::Mutex<()>>,
+    pub autoplay_epoch: std::sync::atomic::AtomicU64,
     pub canvas_rect: Arc<RwLock<Option<CanvasRect>>>,
     /// Server-granted time budget for the current decision window.
     /// Written by the Majsoul bridge (see `autoplay::budget`), read by

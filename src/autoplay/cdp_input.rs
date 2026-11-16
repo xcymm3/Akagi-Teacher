@@ -12,6 +12,15 @@ use chromiumoxide::layout::Point;
 use chromiumoxide::page::Page;
 use std::time::Duration;
 
+#[derive(Debug)]
+pub struct InputCancelled;
+impl std::fmt::Display for InputCancelled {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.write_str("autoplay input cancelled before press")
+    }
+}
+impl std::error::Error for InputCancelled {}
+
 /// Dispatch a single mouse click at `(x, y)` (CSS pixels) as four CDP
 /// events, with mandatory hover before press:
 ///
@@ -49,6 +58,20 @@ pub async fn dispatch_click_shaped(
     click_hold_ms: u32,
     jiggle: bool,
 ) -> Result<()> {
+    dispatch_click_shaped_gated(page, x, y, hover_delay_ms, click_hold_ms, jiggle, None).await
+}
+
+/// Optional final authorization, evaluated after hover and immediately before
+/// mousePressed. A completed press still releases its button normally.
+pub async fn dispatch_click_shaped_gated<'a>(
+    page: &'a Page,
+    x: f64,
+    y: f64,
+    hover_delay_ms: u32,
+    click_hold_ms: u32,
+    jiggle: bool,
+    permit: Option<std::pin::Pin<Box<dyn std::future::Future<Output = bool> + Send + 'a>>>,
+) -> Result<()> {
     // Optional page hook is limited to Mahjong Soul. A hook failure must not
     // disable the existing input path on other platforms or older pages.
     match super::page_health::probe(
@@ -77,7 +100,8 @@ pub async fn dispatch_click_shaped(
         Err(e) => tracing::debug!("autoplay: health probe failed; retaining CDP input: {e:#}"),
         Ok(None) => {}
     }
-    let result = dispatch_mouse_sequence(page, x, y, hover_delay_ms, click_hold_ms, jiggle).await;
+    let result =
+        dispatch_mouse_sequence(page, x, y, hover_delay_ms, click_hold_ms, jiggle, permit).await;
     super::page_health::finish(page).await;
     if tracing::enabled!(tracing::Level::DEBUG) {
         if let Ok(Some(health)) = super::page_health::probe(page, None).await {
@@ -87,13 +111,14 @@ pub async fn dispatch_click_shaped(
     result
 }
 
-async fn dispatch_mouse_sequence(
-    page: &Page,
+async fn dispatch_mouse_sequence<'a>(
+    page: &'a Page,
     x: f64,
     y: f64,
     hover_delay_ms: u32,
     click_hold_ms: u32,
     jiggle: bool,
+    permit: Option<std::pin::Pin<Box<dyn std::future::Future<Output = bool> + Send + 'a>>>,
 ) -> Result<()> {
     let pt = Point::new(x, y);
     page.move_mouse(pt).await.context("CDP move_mouse")?;
@@ -101,6 +126,11 @@ async fn dispatch_mouse_sequence(
         tokio::time::sleep(Duration::from_millis(hover_delay_ms as u64)).await;
     }
 
+    if let Some(permit) = permit {
+        if !permit.await {
+            return Err(InputCancelled.into());
+        }
+    }
     let press = DispatchMouseEventParams::builder()
         .r#type(DispatchMouseEventType::MousePressed)
         .x(pt.x)

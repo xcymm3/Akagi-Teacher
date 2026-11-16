@@ -1,6 +1,6 @@
 /* Hallmark · pre-emit critique: P4 H5 E4 S5 R5 V4 */
 // Existing theme, tile assets and teacher renderer; no additional dashboard.
-import { useMemo, useRef, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { History as HistoryIcon, RefreshCw, Settings } from 'lucide-react'
 import { BotShowList } from '@/components/BotShowList'
@@ -13,9 +13,17 @@ import { useConfigStore } from '@/stores/configStore'
 import { useCaptureStore } from '@/stores/captureStore'
 import { useHistoryStore } from '@/stores/historyStore'
 import { useNotifyStore } from '@/stores/notifyStore'
-import type { GameRecord } from '@/types'
+import type { GameRecord, AutoplaySessionStatus } from '@/types'
 
 export function GameRoom() {
+  const [session, setSession] = useState<AutoplaySessionStatus | null>(null)
+  useEffect(() => {
+    let active = true
+    const refresh = () => { void invoke<AutoplaySessionStatus>('get_autoplay_session_status').then(value => { if(active) setSession(value ?? null) }).catch(() => {}) }
+    refresh()
+    const timer = window.setInterval(refresh, 1000)
+    return () => { active = false; window.clearInterval(timer) }
+  }, [])
   const gameRef = useRef<HTMLDivElement>(null)
   const browserError = useEmbeddedGame(gameRef)
   const config = useConfigStore(s => s.config)
@@ -50,10 +58,10 @@ export function GameRoom() {
     <header className="flex h-12 shrink-0 items-center gap-3 border-b border-border px-3">
       <span className="min-w-0 truncate text-sm font-semibold">Akagi <span className="text-muted-foreground">教师版</span></span>
       <span className="hidden min-w-0 truncate text-xs text-muted-foreground sm:block" role="status">
-        {capture.state === 'running' ? '雀魂 · 数据捕获中' : capture.state === 'error' ? '连接失败，请检查设置' : '正在连接雀魂…'}
+        {autoplay && session?.message ? session.message : capture.state === 'running' ? '雀魂 · 数据捕获中' : capture.state === 'error' ? '连接失败，请检查设置' : '正在连接雀魂…'}
       </span>
       <div className="ml-auto flex shrink-0 items-center gap-2">
-        <button type="button" role="switch" aria-label="自动打牌" aria-checked={autoplay}
+        <button type="button" role="switch" aria-label="自动打牌" title="开启后自动排队、打牌、处理结算并继续下一场" aria-checked={autoplay}
           disabled={busy || !config} onClick={() => void changeAutoplay()}
           className="flex cursor-pointer items-center gap-2 rounded px-2 py-1 text-xs hover:bg-muted active:bg-muted/70 focus-visible:outline-2 focus-visible:outline-ring disabled:cursor-wait disabled:opacity-50">
           自动打牌

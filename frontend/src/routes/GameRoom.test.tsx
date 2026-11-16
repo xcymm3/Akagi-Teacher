@@ -28,6 +28,12 @@ describe('single-window game room', () => {
     expect(screen.getByRole('link',{name:'设置'}).getAttribute('href')).toBe('/settings')
     expect(screen.getByRole('link',{name:'全部记录'}).getAttribute('href')).toBe('/history')
   })
+  it('shows the continuous-play phase while the master switch is enabled', async () => {
+    invoke.mockImplementation((name: string) => Promise.resolve(name === 'get_autoplay_session_status' ? {phase:'running',message:'正在排队，等待匹配',completed:1} : undefined))
+    useConfigStore.setState({config:{autoplay:{enabled:true}} as AppConfig})
+    render(<MemoryRouter><GameRoom /></MemoryRouter>)
+    await waitFor(() => expect(screen.getByRole('status').textContent).toBe('正在排队，等待匹配'))
+  })
   it('opens a recorded game and toggles autoplay without changing other settings', async () => {
     useHistoryStore.setState({records:[{id:'game-1',platform:'majsoul',started_at:'2026-11-14T12:00:00Z',num_players:4,kyoku_mode:'east_south',our_seat:0,our_rank:1,final_scores:[40000,25000,20000,15000],our_delta:15000} as GameRecord]})
     render(<MemoryRouter><GameRoom /></MemoryRouter>)

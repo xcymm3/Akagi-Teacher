@@ -11,6 +11,7 @@ mod proxy;
 
 pub use autoplay::{
     AutoplayConfig, DelayDistribution, DelayMode, DelayModelConfig, MajsoulAutoplayConfig,
+    RankedMode, RankedRoom, SessionConfig,
 };
 pub use bot::{BotConfig, NativeApiConfig};
 pub use capture::{CaptureConfig, CaptureMode, ChromiumConfig, HttpCaptureConfig};

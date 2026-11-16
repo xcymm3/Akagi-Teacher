@@ -172,6 +172,7 @@ pub struct MajsoulBridge {
     /// autoplay manager for click verification (see `autoplay::verify`).
     /// `None` when the autoplay context isn't wired (MITM path, tests).
     input_watch: Option<crate::autoplay::verify::SharedInputWatch>,
+    session_signals: Option<Arc<crate::autoplay::session::SessionSignals>>,
 }
 
 impl MajsoulBridge {
@@ -195,7 +196,16 @@ impl MajsoulBridge {
             replaying: false,
             restore_budget: None,
             input_watch: None,
+            session_signals: None,
         }
+    }
+
+    pub fn with_session(
+        mut self,
+        signals: Option<Arc<crate::autoplay::session::SessionSignals>>,
+    ) -> Self {
+        self.session_signals = signals;
+        self
     }
 
     /// Install the shared time-budget slot (builder-style; used by
@@ -257,6 +267,9 @@ impl MajsoulBridge {
 
     /// Translate `msg` into 0+ mjai events, mutating bridge state as needed.
     fn dispatch(&mut self, msg: &ParsedMessage) -> Vec<MjaiEvent> {
+        if let Some(signals) = &self.session_signals {
+            signals.observe_wire(msg);
+        }
         match (&msg.msg_type, msg.method_name.as_ref()) {
             (MessageType::Request, METHOD_AUTH_GAME) => {
                 self.account_id = msg.payload.get("account_id").and_then(JsonValue::as_u64);
@@ -1548,6 +1561,11 @@ impl Bridge for MajsoulBridge {
                     }),
                 });
                 let events = self.dispatch(&msg);
+                if let Some(signals) = &self.session_signals {
+                    for event in &events {
+                        signals.observe_mjai(event);
+                    }
+                }
                 // Rotate before writing so the StartGame event itself lands
                 // in the freshly-opened file, not the previous game's file.
                 if events

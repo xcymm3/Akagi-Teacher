@@ -184,8 +184,14 @@ export type DelayModelConfig = {
   no_budget_cap_ms: number
 }
 
+export type AutoplaySessionConfig = {
+  room: 'auto' | 'bronze' | 'silver' | 'gold' | 'jade' | 'throne'
+  mode: 'east4' | 'south4'
+}
+export type AutoplaySessionStatus = { phase: string; message: string; completed: number }
 export type AutoplayConfig = {
   enabled: boolean
+  session?: AutoplaySessionConfig
   majsoul: MajsoulAutoplayConfig
   delay: DelayModelConfig
 }

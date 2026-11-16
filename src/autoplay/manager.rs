@@ -348,6 +348,11 @@ impl AutoplayManager {
         // `Send` steps talks to the page's socket and would otherwise be
         // held hostage by a rect query it never uses.
         let needs_canvas = plan.steps.iter().any(|s| matches!(s, Step::Click { .. }));
+        let input_owner = self.ctx.input_lock.clone();
+        let _input_guard = input_owner.lock().await;
+        if !self.cfg.read().await.autoplay.enabled {
+            return;
+        }
         let rect = if needs_canvas {
             // Cache + TTL. If we can't resolve one, drop the click — the page
             // handle isn't ready yet (e.g. user still on the lobby), or the
@@ -1262,9 +1267,14 @@ pub async fn run_autoplay_manager(
     notify: NotifyBus,
     config_dir: std::path::PathBuf,
 ) -> anyhow::Result<()> {
-    AutoplayManager::new(cfg, ctx, tracker, mjai_bus, notify, config_dir)
+    let loop_cfg = cfg.clone();
+    let loop_ctx = ctx.clone();
+    let session_task = tokio::spawn(async move { super::session::run(loop_cfg, loop_ctx).await });
+    let result = AutoplayManager::new(cfg, ctx, tracker, mjai_bus, notify, config_dir)
         .run(response_bus)
-        .await
+        .await;
+    session_task.abort();
+    result
 }
 
 #[cfg(test)]

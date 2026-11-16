@@ -82,6 +82,7 @@ pub trait Bridge: Send {
 /// argument list of every constructor along the way.
 #[derive(Clone, Default)]
 pub struct BridgeHooks {
+    pub session: Option<Arc<crate::autoplay::session::SessionSignals>>,
     /// Majsoul: the server's per-decision-window time budget, taken from
     /// `OptionalOperationList` (see `autoplay::budget`).
     pub time_budget: Option<crate::autoplay::budget::SharedTimeBudget>,
@@ -116,7 +117,8 @@ pub fn for_platform(
         crate::config::Platform::Majsoul => Box::new(
             MajsoulBridge::new(flow_log, session)
                 .with_time_budget(hooks.time_budget)
-                .with_input_watch(hooks.input_watch),
+                .with_input_watch(hooks.input_watch)
+                .with_session(hooks.session),
         ),
         crate::config::Platform::Tenhou => Box::new(
             TenhouBridge::new(flow_log, session)

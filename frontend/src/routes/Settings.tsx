@@ -846,6 +846,7 @@ function AutoplayCard({
     delay: defaultDelayModel(),
   }
   const delay = ap.delay ?? defaultDelayModel()
+  const session = ap.session ?? { room: 'auto', mode: 'south4' }
   const captureIsChromium = draft.capture?.mode === 'chromium'
   // Riichi City autoplay runs through the MITM proxy (frame injection), so
   // the Chromium-mode requirement only applies to the click platforms.
@@ -884,6 +885,21 @@ function AutoplayCard({
             {t('settings.autoplay.requires_chromium')}
           </p>
         )}
+        {draft.platform.kind === 'Majsoul' && <>
+          <p className="text-xs text-muted-foreground">开启自动打牌后，同时自动排队、处理结算并继续下一场；关闭后全部停止。请先登录雀魂并进入大厅。</p>
+          <Field label="自动排队房间" hint="自动选择当前四麻段位可进入的最高房间；指定房间不可进入时回退。">
+            <Select value={session.room} onValueChange={v => setApField({ session: { ...session, room: v as typeof session.room } })}>
+              <SelectTrigger className="w-full"><SelectValue /></SelectTrigger>
+              <SelectContent>{[['auto','按段位自动选择'],['bronze','铜之间'],['silver','银之间'],['gold','金之间'],['jade','玉之间'],['throne','王座之间']].map(([value,label]) => <SelectItem key={value} value={value}>{label}</SelectItem>)}</SelectContent>
+            </Select>
+          </Field>
+          <Field label="自动排队赛制">
+            <Select value={session.mode} onValueChange={v => setApField({ session: { ...session, mode: v as typeof session.mode } })}>
+              <SelectTrigger className="w-full"><SelectValue /></SelectTrigger>
+              <SelectContent><SelectItem value="east4">四麻东风</SelectItem><SelectItem value="south4">四麻半庄</SelectItem></SelectContent>
+            </Select>
+          </Field>
+        </>}
         {/* Delay policy: exactly one of legacy (fixed uniform) or the
             Lua-scripted human-like model is active. */}
         <Field label={t('settings.autoplay.delay_mode')}>

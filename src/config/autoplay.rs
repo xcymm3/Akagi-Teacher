@@ -3,9 +3,11 @@ use serde::{Deserialize, Serialize};
 #[derive(Debug, Clone, Serialize, Deserialize, Default)]
 #[serde(default)]
 pub struct AutoplayConfig {
-    /// Master switch. When `false`, no `AutoplayManager` is spawned and bot
-    /// responses are not converted into UI clicks.
+    /// Master switch for game, lobby and result input. Passive observers may
+    /// remain alive when disabled; they do not issue automatic actions.
     pub enabled: bool,
+    /// Ranked lobby loop follows the master switch; no independent enable flag.
+    pub session: SessionConfig,
     /// Per-platform autoplay knobs. Only the matching platform's section is
     /// consulted at runtime; the others sit dormant.
     pub majsoul: MajsoulAutoplayConfig,
@@ -259,4 +261,30 @@ mod tests {
         assert_eq!(cfg.delay.min_button_delay_ms, default.min_button_delay_ms);
         assert!(!cfg.delay.lognormal.is_empty());
     }
+}
+
+/// Lobby choices used while the autoplay master switch is on.
+#[derive(Debug, Clone, Copy, Default, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(default)]
+pub struct SessionConfig {
+    pub room: RankedRoom,
+    pub mode: RankedMode,
+}
+#[derive(Debug, Clone, Copy, Default, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "snake_case")]
+pub enum RankedRoom {
+    #[default]
+    Auto,
+    Bronze,
+    Silver,
+    Gold,
+    Jade,
+    Throne,
+}
+#[derive(Debug, Clone, Copy, Default, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "snake_case")]
+pub enum RankedMode {
+    East4,
+    #[default]
+    South4,
 }

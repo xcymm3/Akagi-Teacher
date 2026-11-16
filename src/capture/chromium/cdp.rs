@@ -607,6 +607,9 @@ async fn attach_page(
     if let Err(e) = crate::autoplay::page_health::install(&page).await {
         warn!("CDP: autoplay page diagnostics unavailable: {e:#}");
     }
+    if let Err(e) = crate::autoplay::session::install(&page).await {
+        warn!("CDP: ranked-loop page observations unavailable: {e:#}");
+    }
     page.execute(NetworkEnableParams::default())
         .await
         .context("Network.enable")?;

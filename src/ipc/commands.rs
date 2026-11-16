@@ -111,7 +111,20 @@ pub async fn update_config(
     let bot_now_enabled = new_config.bot.enabled;
     let autoplay_now_enabled = new_config.autoplay.enabled;
     let new_overlay = new_config.overlay.clone();
-    *state.config.write().await = new_config;
+    {
+        let mut guard = state.config.write().await;
+        if guard.autoplay.enabled != new_config.autoplay.enabled
+            || guard.autoplay.session != new_config.autoplay.session
+            || platform_changed
+            || capture_changed
+        {
+            state
+                .autoplay_context
+                .autoplay_epoch
+                .fetch_add(1, std::sync::atomic::Ordering::SeqCst);
+        }
+        *guard = new_config;
+    }
 
     // Open / close / retune the overlay window to match what was just saved.
     overlay::reconcile(&app, &new_overlay);
@@ -307,12 +320,33 @@ pub async fn set_autoplay_enabled(
             return Err("自动打牌需要 Chromium 捕获模式，请先在设置中切换".into());
         }
         next.autoplay.enabled = enabled;
+        if guard.autoplay.enabled != enabled {
+            state
+                .autoplay_context
+                .autoplay_epoch
+                .fetch_add(1, std::sync::atomic::Ordering::SeqCst);
+        }
         persist_config(&next, &state.config_path).map_err(|e| e.to_string())?;
         *guard = next;
     }
     start_autoplay_manager(enabled, &state);
     let _ = crate::ipc::emit_shell(&app, "autoplay-config", &enabled);
     Ok(())
+}
+
+#[tauri::command]
+pub async fn get_autoplay_session_status(
+    state: State<'_, AppState>,
+) -> CmdResult<crate::autoplay::session::SessionStatus> {
+    let config = state.config.read().await;
+    if !config.autoplay.enabled {
+        return Ok(crate::autoplay::session::SessionStatus {
+            phase: "off".into(),
+            message: "自动打牌已关闭".into(),
+            completed: state.autoplay_context.session.snapshot().games,
+        });
+    }
+    Ok(state.autoplay_context.session.status())
 }
 
 /// Synthetic `BotInfo` entries for the built-in native bots. They have no
@@ -1838,6 +1872,7 @@ macro_rules! ipc_handlers {
             $crate::ipc::commands::set_overlay_enabled,
             $crate::ipc::commands::fit_overlay_height,
             $crate::ipc::commands::set_autoplay_enabled,
+            $crate::ipc::commands::get_autoplay_session_status,
             $crate::ipc::commands::list_bots,
             $crate::ipc::commands::set_active_bot,
             $crate::ipc::commands::get_bot_settings,

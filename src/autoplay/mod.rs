@@ -67,6 +67,7 @@ pub mod manager;
 pub mod page_health;
 pub mod platform;
 pub mod riichi_city;
+pub mod session;
 pub mod teacher;
 pub mod tenhou;
 pub mod tenhou_state;
