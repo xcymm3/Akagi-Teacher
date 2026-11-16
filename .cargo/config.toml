@@ -1,0 +1,9 @@
+# Keep local development and tests compact. Release settings are unchanged.
+# Applies when Cargo runs from this project or one of its subdirectories.
+[profile.dev]
+debug = 0
+incremental = false
+
+[profile.test]
+debug = 0
+incremental = false
