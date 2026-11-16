@@ -40,6 +40,19 @@ describe('single-window game room', () => {
     expect(screen.getByRole('switch',{name:'自动打牌'}).getAttribute('aria-checked')).toBe('true')
     expect(invoke).not.toHaveBeenCalledWith('set_autoplay_enabled', expect.anything())
   })
+  it('shows settings-open progress and surfaces failures without changing autoplay', async () => {
+    let fail!: (reason: Error) => void
+    invoke.mockImplementation((name: string) => name === 'open_settings' ? new Promise((_, reject) => { fail = reject }) : Promise.resolve(undefined))
+    useConfigStore.setState({config:{autoplay:{enabled:true}} as AppConfig})
+    render(<MemoryRouter><GameRoom /></MemoryRouter>)
+    fireEvent.click(screen.getByRole('button',{name:'设置'}))
+    expect(screen.getByRole('button',{name:'设置'}).getAttribute('aria-busy')).toBe('true')
+    expect(screen.getByRole('button',{name:'设置'})).toHaveProperty('disabled',true)
+    fail(new Error('无法创建窗口'))
+    expect(await screen.findByRole('alert')).toHaveProperty('textContent','打开设置失败：Error: 无法创建窗口')
+    expect(screen.getByRole('button',{name:'设置'})).toHaveProperty('disabled',false)
+    expect(screen.getByRole('switch',{name:'自动打牌'}).getAttribute('aria-checked')).toBe('true')
+  })
   it('shows the continuous-play phase while the master switch is enabled', async () => {
     invoke.mockImplementation((name: string) => Promise.resolve(name === 'get_autoplay_session_status' ? {phase:'running',message:'正在排队，等待匹配',completed:1} : undefined))
     useConfigStore.setState({config:{autoplay:{enabled:true}} as AppConfig})

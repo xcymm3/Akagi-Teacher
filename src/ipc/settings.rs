@@ -114,6 +114,7 @@ pub async fn open_settings(
     tab: Option<String>,
 ) -> Result<(), String> {
     trusted(&webview)?;
+    tracing::info!(target: "akagi::settings", "opening settings accessory window");
     let (tx, rx) = tokio::sync::oneshot::channel();
     let handle = app.clone();
     let tab = if tab.as_deref() == Some("updates") {
@@ -149,13 +150,21 @@ pub async fn open_settings(
             .minimizable(false)
             .skip_taskbar(true);
             #[cfg(windows)]
-            let builder = builder.parent_raw(main.hwnd()?);
+            // An owned top-level window floats above the game's native webview.
+            // parent_raw would set WS_CHILD, clipping settings inside main.
+            let builder = builder.owner_raw(main.hwnd()?);
             #[cfg(not(windows))]
             let _ = main;
-            builder.center().build()?;
+            let window = builder.center().build()?;
+            window.show()?;
+            window.set_focus()?;
+            tracing::info!(target: "akagi::settings", "settings accessory window opened");
             Ok(())
         })()
-        .map_err(|e| e.to_string());
+        .map_err(|e| format!("打开设置失败：{e:#}"));
+        if let Err(error) = &result {
+            tracing::error!(target: "akagi::settings", %error, "could not open settings");
+        }
         let _ = tx.send(result);
     })
     .map_err(|e| e.to_string())?;
