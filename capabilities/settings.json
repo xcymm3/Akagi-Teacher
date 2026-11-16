@@ -1,6 +1,6 @@
 {
   "identifier": "settings",
-  "description": "Allow settings to close after checking unsaved changes",
+  "description": "Allow the custom settings title bar to drag and close its own window",
   "webviews": ["settings"],
-  "permissions": ["core:window:allow-close"]
+  "permissions": ["core:window:allow-close", "core:window:allow-start-dragging"]
 }
