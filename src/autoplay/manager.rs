@@ -819,6 +819,9 @@ impl AutoplayManager {
                 }
                 return true;
             }
+            if let Some(page) = self.ctx.page.read().await.as_ref() {
+                super::page_health::log_health(page, "input verification timed out").await;
+            }
             if attempt == cfg.click_retries {
                 break;
             }

@@ -49,6 +49,52 @@ pub async fn dispatch_click_shaped(
     click_hold_ms: u32,
     jiggle: bool,
 ) -> Result<()> {
+    // Optional page hook is limited to Mahjong Soul. A hook failure must not
+    // disable the existing input path on other platforms or older pages.
+    match super::page_health::probe(
+        page,
+        Some(
+            hover_delay_ms
+                .saturating_add(click_hold_ms)
+                .saturating_add(500),
+        ),
+    )
+    .await
+    {
+        Ok(Some(health)) => {
+            tracing::debug!(health = ?health, "autoplay: before input");
+            if let Some(reason) = health.blocked_reason() {
+                super::page_health::finish(page).await;
+                return Err(anyhow!("autoplay page not ready: {reason}"));
+            }
+            if health.frame_age_ms.is_some_and(|age| age > 3000.0) {
+                tracing::warn!(
+                    frames = health.frames,
+                    "autoplay: animation frames stale; browser throttling is possible"
+                );
+            }
+        }
+        Err(e) => tracing::debug!("autoplay: health probe failed; retaining CDP input: {e:#}"),
+        Ok(None) => {}
+    }
+    let result = dispatch_mouse_sequence(page, x, y, hover_delay_ms, click_hold_ms, jiggle).await;
+    super::page_health::finish(page).await;
+    if tracing::enabled!(tracing::Level::DEBUG) {
+        if let Ok(Some(health)) = super::page_health::probe(page, None).await {
+            tracing::debug!(health = ?health, "autoplay: after input (wire verification still required)");
+        }
+    }
+    result
+}
+
+async fn dispatch_mouse_sequence(
+    page: &Page,
+    x: f64,
+    y: f64,
+    hover_delay_ms: u32,
+    click_hold_ms: u32,
+    jiggle: bool,
+) -> Result<()> {
     let pt = Point::new(x, y);
     page.move_mouse(pt).await.context("CDP move_mouse")?;
     if hover_delay_ms > 0 {

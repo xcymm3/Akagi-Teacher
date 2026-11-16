@@ -64,6 +64,7 @@ pub mod delay;
 pub mod inject;
 pub mod majsoul;
 pub mod manager;
+pub mod page_health;
 pub mod platform;
 pub mod riichi_city;
 pub mod teacher;

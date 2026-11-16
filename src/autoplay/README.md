@@ -276,3 +276,15 @@ simply `None` there and the static `no_budget_cap_ms` applies.
 - `assets/delay_default.lua` is compiled and exercised by
   `script::tests::bundled_default_script_works`; keep it in sync with
   the ctx table.
+
+## 雀魂页面状态与输入诊断
+
+CDP连接时安装页面内诊断脚本，后续导航自动重新安装；只在雀魂域名生效，不授予页面应用IPC权限。
+每次自动点击前检查画布、可见性和已观察到的WebGL上下文状态，并在页面失焦时补发focus事件。
+窗口级blur只在当前自动点击的短时间内拦截，完成或到期即恢复；输入框的blur不受影响。
+动画帧停滞只记录警告，浏览器后台节流也可能造成停滞，不因此认定黑屏或自动重载。
+诊断不读取像素、不截屏，不包含手牌、登录信息或网络内容；页面事件计数不代表游戏接受了操作。
+最终仍使用原有上行操作指令验证，失败时在日志中附加页面状态。DEBUG日志额外记录点击前后状态。
+诊断不可用时保留原有CDP路径，不增加第二种点击方式，不改变模型、教师或弃和决策。
+
+离线验证：`node --test scripts/test-page-health.cjs`（使用模拟页面，不操作真实窗口）。

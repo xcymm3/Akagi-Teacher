@@ -604,6 +604,9 @@ async fn attach_page(
     notify: NotifyBus,
     block_telemetry: bool,
 ) -> Result<JoinHandle<()>> {
+    if let Err(e) = crate::autoplay::page_health::install(&page).await {
+        warn!("CDP: autoplay page diagnostics unavailable: {e:#}");
+    }
     page.execute(NetworkEnableParams::default())
         .await
         .context("Network.enable")?;
