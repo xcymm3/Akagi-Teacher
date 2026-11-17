@@ -1,11 +1,11 @@
 # Akagi Teacher 教师版中文使用说明
 
-本说明对应 `teacher-v3.7.2.16`，提供 Windows x64 便携包。
+本说明对应 `teacher-v3.7.2.17`，提供 Windows x64 便携包。
 
 ## 下载与启动
 
-1. 首次使用，下载 `akagi-teacher-v3.7.2.16-windows-x64.zip`，完整解压后运行其中的 `akagi-teacher.exe`。不要下载 GitHub 自动生成的 Source code 包，不要直接在压缩包里运行。
-2. 已有完整运行目录时，可下载独立 `akagi-teacher-v3.7.2.16.exe`，关闭旧程序后放到原 EXE 同目录运行，保留旁边的 `runtime` 文件夹。独立 EXE 不包含完整 Python/uv 运行环境，新用户请选完整 ZIP。
+1. 首次使用，下载 `akagi-teacher-v3.7.2.17-windows-x64.zip`，完整解压后运行其中的 `akagi-teacher.exe`。不要下载 GitHub 自动生成的 Source code 包，不要直接在压缩包里运行。
+2. 已有完整运行目录时，可下载独立 `akagi-teacher-v3.7.2.17.exe`，关闭旧程序后放到原 EXE 同目录运行，保留旁边的 `runtime` 文件夹。独立 EXE 不包含完整 Python/uv 运行环境，新用户请选完整 ZIP。
 3. 保留已有配置、WebView2 登录资料和对局记录。首次登录在内嵌雀魂页面完成，发行包不包含任何用户账号、配置、日志或牌谱。
 4. 需要 Microsoft Edge WebView2 Runtime。缺少时可安装 [微软 Evergreen Runtime](https://developer.microsoft.com/microsoft-edge/webview2/)。
 5. EXE 未做数字签名，可先按随附 SHA256SUMS 文件核验下载。
@@ -17,6 +17,8 @@
 “自动打牌”开关控制对局输入、自动排队、结算和继续下一场。关闭后不再发起新的自动操作；已经发给服务器的匹配请求或动作无法撤回。
 
 ## 设置与记录窗口
+
+v3.7.2.17 修复设置窗口无法关闭：补齐原生窗口销毁权限，保留未保存修改、保存中及更新中的关闭保护。
 
 点击齿轮打开独立附属窗口，重复点击复用同一个窗口。它采用自绘标题栏，顶部区域可拖拽，右上角关闭，可从边缘调整大小。打开或切换附属页不会隐藏游戏，也不会关闭自动打牌。最小化主窗口后的后台运行仍不能保证。
 
@@ -103,7 +105,7 @@
 
 ## 校验与验证范围
 
-使用 PowerShell 的 `Get-FileHash -Algorithm SHA256` 计算 EXE 或 ZIP 校验值，与随附的 `Akagi-Teacher-v3.7.2.16-SHA256SUMS.txt` 对比。
+使用 PowerShell 的 `Get-FileHash -Algorithm SHA256` 计算 EXE 或 ZIP 校验值，与随附的 `Akagi-Teacher-v3.7.2.17-SHA256SUMS.txt` 对比。
 
 本版发布前检查前端测试与构建、Windows Release 编译、模型嵌入、PE 架构、命令行帮助、ZIP 完整性和 Release 元数据。未操作真实游戏窗口，未执行真实原地替换及自动重启验收。
 
