@@ -2,5 +2,5 @@
   "identifier": "settings",
   "description": "Allow the custom settings title bar to drag and close its own window",
   "webviews": ["settings"],
-  "permissions": ["core:window:allow-close", "core:window:allow-start-dragging"]
+  "permissions": ["core:window:allow-close", "core:window:allow-destroy", "core:window:allow-start-dragging"]
 }
